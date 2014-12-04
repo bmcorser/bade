@@ -4,6 +4,7 @@ from setuptools.command.test import test as TestCommand
 
 
 class PyTest(TestCommand):
+    'Hook into py.test to run the test suite'
     user_options = [('pytest-args=', 'a', "Arguments to pass to py.test")]
 
     def initialize_options(self):
@@ -20,7 +21,9 @@ class PyTest(TestCommand):
         errno = pytest.main(self.pytest_args)
         sys.exit(errno)
 
+
 def readme():
+    'Dump out the readme'
     with open('README.rst') as f:
         return f.read()
 

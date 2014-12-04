@@ -12,8 +12,6 @@ from . import utils
 
 
 
-shutil.rmtree('_build', ignore_errors=True)
-
 def write_html(html, htmlpath):
     htmldir = os.path.dirname(htmlpath)
     if not os.path.exists(htmldir):
@@ -53,11 +51,14 @@ def build_copy_file(source, dest):
 class Build(object):
 
     def __init__(self, config):
+        'Create config, build blog tree'
         self.config = config
-        find_posts = ['find', self.config.blogroot, '-name', '*.rst']
-        self.posts = sorted(subprocess.check_output(find_posts).split(),
-                            reverse=True)
         self.indexes = self._indexes()
+
+    def clean(self):
+        'Wipe out the build dir'
+        shutil.rmtree(self.config.build, ignore_errors=True)
+
 
     def title_buildpath(self, root, rst_path):
         bare_path, ext = os.path.splitext(rst_path)
@@ -75,6 +76,9 @@ class Build(object):
         }
 
     def _indexes(self):
+        find = ['find', self.config.blogroot, '-name', '*.rst']
+        self.posts = sorted(subprocess.check_output(find).split(),
+                            reverse=True)
         D = utils.OrderedDefaultdict
         month_tree = D(lambda: D(list))
         for rst_path in self.posts:

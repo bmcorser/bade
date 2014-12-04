@@ -5,6 +5,7 @@ from . import utils
 
 
 class Configuration(object):
+    'Holds the defaults for a Build'
 
     defaults = {
         'pygments_directive': True,
@@ -13,7 +14,8 @@ class Configuration(object):
         'pages': [],
     }
 
-    def __init__(self, config_dict, overrides=dict()):
+    def __init__(self, config_dict, overrides={}):
+        'Handle mapping a dict to required configuration parameters'
         template_dirs = config_dict.pop('template_dirs', ['templates'])
         if not isinstance(template_dirs, list):
             raise TypeError('Misconfigured: `templates` should be a list')
