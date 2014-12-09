@@ -2,4 +2,5 @@ click
 docutils
 mako
 sass-cli
+pygments
 pyyaml
