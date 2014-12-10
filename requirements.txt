@@ -4,3 +4,4 @@ mako
 sass-cli
 pygments
 pyyaml
+https://bitbucket.org/prologic/pydot/get/ac76697320d6.zip
