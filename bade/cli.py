@@ -8,7 +8,7 @@ from .config import Configuration
 
 
 @click.command()
-@click.argument('config_path', type=click.Path(), default='.bade.yaml')
+@click.argument('config_path', type=click.Path(), default='bade.yaml')
 @click.option('--debug', is_flag=True, help='Print debugging info')
 def main(config_path, debug):
     'Command line interface for bade'
@@ -20,4 +20,5 @@ def main(config_path, debug):
     else:
         config = Configuration({})
     build = Build(config)
+    build.clean()
     build.run()

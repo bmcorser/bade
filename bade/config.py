@@ -1,7 +1,8 @@
+import os
 from docutils.parsers.rst import directives
 from mako.lookup import TemplateLookup
 
-from . import utils
+from .directives import pygments_directive, DotgraphDirective
 
 
 class Configuration(object):
@@ -9,11 +10,12 @@ class Configuration(object):
 
     defaults = {
         'pygments_directive': True,
+        'dotgraph_directive': True,
         'build': '_build',
         'template_dirs': ['templates'],
         'blogroot': 'blog',
         'pages': [],
-        'debug': True,
+        'debug': False,
     }
 
     def __init__(self, config_dict, overrides={}):
@@ -22,8 +24,10 @@ class Configuration(object):
         self.overrides = overrides
         if self.pygments_directive:
             # Render code clocks using pygments
-            directives.register_directive('code-block',
-                                          utils.pygments_directive)
+            directives.register_directive('code-block', pygments_directive)
+        if self.pygments_directive:
+            # Render DOT to SVG
+            directives.register_directive('dot-graph', DotgraphDirective)
         if not isinstance(self.template_dirs, list):
             raise TypeError('Misconfigured: `template_dirs` should be a list')
         if not isinstance(self.pages, list):
