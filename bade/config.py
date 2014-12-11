@@ -1,4 +1,3 @@
-import os
 from docutils.parsers.rst import directives
 from mako.lookup import TemplateLookup
 
@@ -19,12 +18,14 @@ class Configuration(object):
         'debug': False,
     }
 
-    def __init__(self, config_dict, overrides={}):
+    def __init__(self, config_dict, overrides=None):
         'Handle mapping a dict to required configuration parameters'
+        if overrides is None:
+            overrides = dict()
         self.config_dict = config_dict
         self.overrides = overrides
         if self.pygments_directive:
-            # Render code clocks using pygments
+            # Render code blocks using pygments
             directives.register_directive('code-block', pygments_directive)
         if self.pygments_directive:
             # Render DOT to SVG
@@ -34,17 +35,21 @@ class Configuration(object):
         if not isinstance(self.pages, list):
             raise TypeError('Misconfigured: `pages` should be a list')
         self.config_dict['pages'] = ["{0}.rst".format(path)
-                                     for path in config_dict['pages']]
+                                     for path in config_dict.get('pages', [])]
         self.template_lookup = TemplateLookup(directories=self.template_dirs)
 
     def __getattr__(self, name):
+        'Refer to overrides, passed config or defaults'
         try:
             return self.overrides[name]
         except KeyError:
             try:
                 return self.config_dict[name]
             except KeyError:
-                return self.defaults[name]
+                try:
+                    return self.defaults[name]
+                except KeyError:
+                    raise KeyError("'{0}' not configured".format(name))
 
     def setval(self, name, value):
         'Set a configuration value'

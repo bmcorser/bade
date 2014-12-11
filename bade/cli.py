@@ -15,8 +15,7 @@ def main(config_path, debug):
     if os.path.exists(config_path):
         with open(config_path, 'r') as config_file:
             config_dict = yaml.load(config_file.read())
-            config_dict.update({'debug': debug})
-            config = Configuration(config_dict)
+            config = Configuration(config_dict, {'debug': debug})
     else:
         config = Configuration({})
     build = Build(config)
