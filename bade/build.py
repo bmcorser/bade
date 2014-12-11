@@ -12,12 +12,6 @@ from mako import exceptions
 from . import utils
 
 
-def write_html(html, htmlpath):
-    htmldir = os.path.dirname(htmlpath)
-    if not os.path.exists(htmldir):
-        os.makedirs(htmldir)
-    with open(htmlpath, 'w') as htmlfile:
-        htmlfile.write(html)
 
 
 def render_rst(rst_path):
@@ -26,14 +20,6 @@ def render_rst(rst_path):
     return docutils_publish(rst_string, writer_name='html')['html_body']
 
 
-def build_blog_page(blog_template):
-    buildpath = blog_template.replace('templates', '_build')
-    context = {
-        'index': index,
-        'meta': {'title': 'Chatter'},
-    }
-    template = Template(filename=blog_template, lookup=template_lookup)
-    write_html(template.render(**context), buildpath)
 
 
 
@@ -67,6 +53,18 @@ class Build(object):
                                         .decode('utf-8'))
                 return error_html, True
             raise
+
+    def write_html(self, template, context, buildpath):
+        html, err = self.render_err(template, context)
+        htmldir = os.path.dirname(buildpath)
+        if not os.path.exists(htmldir):
+            os.makedirs(htmldir)
+        with open(buildpath, 'w') as htmlfile:
+            htmlfile.write(html)
+        if err:
+            print("Debug HTML written to: {0}".format(buildpath))
+        else:
+            print("Writing to: {0}".format(buildpath))
 
     def build_copy_dir(self, dir_):
         shutil.copytree(dir_, os.path.join(self.config.build, dir_))
@@ -129,12 +127,7 @@ class Build(object):
             },
             'content_html': render_rst(rst_path),
         }
-        html, err = self.render_err('page.html', context)
-        write_html(html, buildpath)
-        if err:
-            print("*** Error ***\nDebug HTML written to: {0}".format(buildpath))
-        else:
-            print("Writing to: {0}".format(buildpath))
+        self.write_html('page.html', context, buildpath)
 
     def iter_posts(self, rst_path, direction):
         post_index = self.posts.index(rst_path)
@@ -154,12 +147,16 @@ class Build(object):
             'content_html': render_rst(rst_path),
         }
         buildpath = context['meta']['buildpath']
-        html, err = self.render_err('post.html', context)
-        write_html(html, buildpath)
-        if err:
-            print("Debug HTML written to: {0}".format(buildpath))
-        else:
-            print("Writing to: {0}".format(buildpath))
+        self.write_html('post.html', context, buildpath)
+
+    def build_blog_page(self):
+        buildpath = os.path.join(self.config.build, self.config.blog_template)
+        context = {
+            'index': self.blogtree,
+            'meta': {'title': 'Blog Index'},
+        }
+        template = Template(filename=blog_template, lookup=template_lookup)
+        write_html(template.render(**context), buildpath)
 
     def build_pages(self, pool):
         pool.map_async(self.build_page, self.config.pages)
@@ -178,7 +175,6 @@ class Build(object):
         pool.map_async(self.build_copy_dir, self.config.assetpaths)
         self.build_pages(pool)
         self.build_posts(pool)
-        exit()
         pool.apply_async(shutil.copy, ('index.html', '_build'))
         build_blog_page('blog.html')
 

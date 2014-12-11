@@ -14,6 +14,7 @@ class Configuration(object):
         'build': '_build',
         'template_dirs': ['templates'],
         'blogroot': 'blog',
+        'blogtemplate': 'blog.html',
         'pages': [],
         'debug': False,
     }
