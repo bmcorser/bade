@@ -98,6 +98,8 @@ class Build(object):
             'nexttitle': nexttitle,
             'previouspath': previouspath,
             'previoustitle': previoustitle,
+            'github': "{0}/blob/master/{1}".format(self.config.github,
+                                                   rst_path)
         }
 
     def _blogtree(self):
@@ -168,7 +170,7 @@ class Build(object):
         pool.map_async(self.build_copy_dir, self.config.assetpaths)
         self.build_pages(pool)
         self.build_posts(pool)
-        pool.apply_async(shutil.copy, ('index.html', self.config.build))
+        shutil.copy('templates/index.html', self.config.build)
         self.build_blog_page('blog.rst')
 
         pool.close()
