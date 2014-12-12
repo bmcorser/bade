@@ -90,6 +90,16 @@ class Build(object):
     def parse_meta(self, rst_path):
         title, buildpath = self.title_buildpath(None, rst_path)
         previouspath, previoustitle, nextpath, nexttitle = self.prev_next(rst_path)
+        git_cmd = [
+            'git',
+            'log',
+            '-n',
+            '1',
+            '--pretty=format:%h',
+            '--',
+            rst_path
+        ]
+        latest_commit = subprocess.check_output(git_cmd).decode('utf-8')
         return {
             'date': datetime.date(*map(int, rst_path.split(os.sep)[1:4])),
             'title': title,
@@ -98,8 +108,11 @@ class Build(object):
             'nexttitle': nexttitle,
             'previouspath': previouspath,
             'previoustitle': previoustitle,
-            'github': "{0}/blob/master/{1}".format(self.config.github,
-                                                   rst_path)
+            'github': os.path.join(self.config.github,
+                                   'blob',
+                                   'master',
+                                   rst_path),
+            'commit': latest_commit,
         }
 
     def _blogtree(self):
