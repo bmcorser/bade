@@ -6,23 +6,15 @@ import shutil
 import subprocess
 
 from docutils.core import publish_parts as docutils_publish
-from mako.template import Template
 from mako import exceptions
 
 from . import utils
-
-
 
 
 def render_rst(rst_path):
     with open(rst_path, 'r') as rst_file:
         rst_string = rst_file.read()
     return docutils_publish(rst_string, writer_name='html')['html_body']
-
-
-
-
-
 
 
 class Build(object):
@@ -57,7 +49,7 @@ class Build(object):
     def write_html(self, template, context, buildpath):
         html, err = self.render_err(template, context)
         htmldir = os.path.dirname(buildpath)
-        if not os.path.exists(htmldir):
+        if not os.path.exists(htmldir) and htmldir:
             os.makedirs(htmldir)
         with open(buildpath, 'w') as htmlfile:
             htmlfile.write(html)
@@ -67,6 +59,7 @@ class Build(object):
             print("Writing to: {0}".format(buildpath))
 
     def build_copy_dir(self, dir_):
+        print
         shutil.copytree(dir_, os.path.join(self.config.build, dir_))
 
     def title_buildpath(self, root, rst_path):
@@ -118,13 +111,10 @@ class Build(object):
         return blogtree
 
     def build_page(self, rst_path):
-        title, buildpath = self.title_buildpath(os.path.dirname(rst_path),
-                                                rst_path)
+        pageroot = os.path.dirname(rst_path)
+        title, buildpath = self.title_buildpath(pageroot, rst_path)
         context = {
-            'meta': {
-                'index': self.blogtree,
-                'title': title,
-            },
+            'meta': {'index': self.blogtree, 'title': title},
             'content_html': render_rst(rst_path),
         }
         self.write_html('page.html', context, buildpath)
@@ -149,14 +139,17 @@ class Build(object):
         buildpath = context['meta']['buildpath']
         self.write_html('post.html', context, buildpath)
 
-    def build_blog_page(self):
-        buildpath = os.path.join(self.config.build, self.config.blog_template)
+    def build_blog_page(self, blog_template):
+        buildpath = (os.path.join(self.config.build, blog_template)
+                            .replace('rst', 'html'))
+        index_rst, _ = self.render_err(blog_template, {'index': self.blogtree})
+        content_html = docutils_publish(index_rst, writer_name='html')['html_body']
         context = {
             'index': self.blogtree,
-            'meta': {'title': 'Blog Index'},
+            'meta': {'title': 'Blog'},
+            'content_html': content_html,
         }
-        template = Template(filename=blog_template, lookup=template_lookup)
-        write_html(template.render(**context), buildpath)
+        self.write_html('page.html', context, buildpath)
 
     def build_pages(self, pool):
         pool.map_async(self.build_page, self.config.pages)
@@ -175,9 +168,14 @@ class Build(object):
         pool.map_async(self.build_copy_dir, self.config.assetpaths)
         self.build_pages(pool)
         self.build_posts(pool)
-        pool.apply_async(shutil.copy, ('index.html', '_build'))
-        build_blog_page('blog.html')
+        pool.apply_async(shutil.copy, ('index.html', self.config.build))
+        self.build_blog_page('blog.rst')
 
         pool.close()
         pool.join()
+        subprocess.check_call([
+            'sass',
+            self.config.sassin,
+            os.path.join(self.config.build, self.config.sassout)
+        ])
         print('done.')
