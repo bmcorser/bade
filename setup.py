@@ -1,5 +1,5 @@
 import sys
-from setuptools import setup
+from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
 
 
@@ -24,14 +24,14 @@ class PyTest(TestCommand):
 
 def readme():
     'Dump out the readme'
-    with open('README.rst') as f:
-        return f.read()
+    with open('README.rst') as readme_:
+        return readme_.read()
 
 setup(
     name='bade',
-    version='0.0.1',
-    description='Micro-blogging platform',
-    packages=['bade'],
+    version='0.0.5',
+    description='Micro-blogging with rST',
+    packages=find_packages(),
     long_description=readme(),
     url='http://bmcorser.github.com/bade',
     author='bmcorser',
