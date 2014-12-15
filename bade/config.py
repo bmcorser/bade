@@ -1,5 +1,7 @@
+import os
+from os import environ
 from docutils.parsers.rst import directives
-from mako.lookup import TemplateLookup
+from mako import lookup, exceptions
 
 from .directives import pygments_directive, DotgraphDirective
 
@@ -7,14 +9,16 @@ from .directives import pygments_directive, DotgraphDirective
 class Configuration(object):
     'Holds the defaults for a Build'
 
-    defaults = {
+    _defaults = {
         'pygments_directive': True,
         'dotgraph_directive': True,
         'build': '_build',
         'template_dirs': ['templates'],
+        'index_template': 'index.html',
         'blogroot': 'blog',
-        'blogtemplate': 'blog.html',
+        'blogtree_rst': 'blog.rst',
         'pages': [],
+        'assetpaths': [],
         'debug': False,
     }
 
@@ -22,8 +26,8 @@ class Configuration(object):
         'Handle mapping a dict to required configuration parameters'
         if overrides is None:
             overrides = dict()
-        self.config_dict = config_dict
-        self.overrides = overrides
+        self._config_dict = config_dict
+        self._overrides = overrides
         if self.pygments_directive:
             # Render code blocks using pygments
             directives.register_directive('code-block', pygments_directive)
@@ -34,23 +38,38 @@ class Configuration(object):
             raise TypeError('Misconfigured: `template_dirs` should be a list')
         if not isinstance(self.pages, list):
             raise TypeError('Misconfigured: `pages` should be a list')
-        self.config_dict['pages'] = ["{0}.rst".format(path)
-                                     for path in config_dict.get('pages', [])]
-        self.template_lookup = TemplateLookup(directories=self.template_dirs)
+        self._config_dict['pages'] = ["{0}.rst".format(path)
+                                      for path in config_dict.get('pages', [])]
+        package_templates = os.path.join(environ.get('VIRTUAL_ENV'),
+                                         'bade/templates')
+        self._template_lookup = lookup.TemplateLookup(
+            directories=self.template_dirs
+        )
+        self._default_template_lookup = lookup.TemplateLookup(
+            directories=[package_templates]
+        )
 
     def __getattr__(self, name):
         'Refer to overrides, passed config or defaults'
         try:
-            return self.overrides[name]
+            return self._overrides[name]
         except KeyError:
             try:
-                return self.config_dict[name]
+                return self._config_dict[name]
             except KeyError:
                 try:
-                    return self.defaults[name]
+                    return self._defaults[name]
                 except KeyError:
-                    raise KeyError("'{0}' not configured".format(name))
+                    raise AttributeError("'{0}' not configured".format(name))
+
+    def get_template(self, name):
+        'Lookup a template from either packaged templates or configured path'
+        try:
+            template = self._template_lookup.get_template(name)
+        except exceptions.TopLevelLookupException:
+            template = self._default_template_lookup.get_template(name)
+        return template
 
     def setval(self, name, value):
         'Set a configuration value'
-        self.config_dict[name] = value
+        self._config_dict[name] = value

@@ -1,0 +1,10 @@
+<header>
+    <ul>
+    % for page in meta['pages']:
+        <li>
+            <a href="${page['path']}">${page['title']}</a>
+        </li>
+    % endfor
+        <li><a href="/blog.html">Blog</a><li>
+    </ul>
+</header>

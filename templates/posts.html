@@ -1,0 +1,23 @@
+<ul>
+    % for year, months in index.iteritems():
+    <li>
+        ${year}
+        <ul>
+            % for month, postmetas in months.iteritems():
+            <li>
+                ${month}
+                <ul>
+                    % for postmeta in postmetas:
+                    <li>
+                        <a href="${postmeta['buildpath'].replace('_build', '')}">
+                            ${postmeta['title']}
+                        </a>
+                    </li>
+                    % endfor
+                </ul>
+            </li>
+            % endfor
+        </ul>
+    </li>
+    % endfor
+</ul>

@@ -1,0 +1,14 @@
+<div class="previous-next">
+    % if meta['previouspath']:
+        <div class='previous-post'>
+            <a href="${meta['previouspath']}" />previous</a> 
+            ${meta['previoustitle']}
+        </div>
+    % endif
+    % if meta['nextpath']:
+        <div class='next-post'>
+            ${meta['nexttitle']}
+            <a href="${meta['nextpath']}" />next</a> 
+        </div>
+    % endif
+</div>

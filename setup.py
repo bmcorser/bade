@@ -1,7 +1,9 @@
+import os
 import sys
 from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
 
+PKG_NAME = 'bade'
 
 class PyTest(TestCommand):
     'Hook into py.test to run the test suite'
@@ -22,15 +24,27 @@ class PyTest(TestCommand):
         sys.exit(errno)
 
 
+def include(*dirs):
+    'Generate explicit mapping of asset -> destination for setuptools'
+    results = []
+    for src_dir in dirs:
+        for root, _, files in os.walk(src_dir):
+            results.append((os.path.join(PKG_NAME, root),
+                            map(lambda f: os.path.join(root, f), files)))
+    print(results)
+    return results
+
+
 def readme():
     'Dump out the readme'
     with open('README.rst') as readme_:
         return readme_.read()
 
 setup(
-    name='bade',
-    version='0.0.5',
+    name=PKG_NAME,
+    version='0.0.6',
     description='Micro-blogging with rST',
+    data_files=include('templates'),
     packages=find_packages(),
     long_description=readme(),
     url='http://bmcorser.github.com/bade',
