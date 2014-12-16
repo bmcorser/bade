@@ -4,7 +4,6 @@ import os
 import multiprocessing
 import shutil
 import subprocess
-import functools
 
 from docutils.core import publish_parts as docutils_publish
 from mako import exceptions as mako_exceptions
@@ -24,7 +23,7 @@ class Build(object):
         'Create config, build blog tree'
         self.config = config
         self.postpaths = self._postpaths()
-        self.blogtree = self._blogtree()
+        self.index = self._index()
 
     def _postpaths(self):
         'Get a list of rST files in configured blog root dir'
@@ -42,11 +41,20 @@ class Build(object):
         D = utils.OrderedDefaultdict
         blogtree = D(lambda: D(list))
         for rst_path in self.postpaths:
-            meta = self.parse_meta(rst_path)
+            meta = self.post_meta(rst_path)
             date = datetime.date(*map(int, rst_path.split(os.sep)[1:4]))
             meta['date'] = date
             blogtree[date.year][date.month].append(meta)
         return blogtree
+
+    def _index(self):
+        'Return index of all pages and posts'
+        pages = [
+            {'title': title, 'path': path.replace(self.config.build, '')}
+            for title, path
+            in map(self.page_title_buildpath, self.config.pages)
+        ]
+        return {'blogtree': self.blogtree, 'pages': pages}
 
     def clean(self):
         'Carelessly wipe out the build dir'
@@ -60,7 +68,7 @@ class Build(object):
         except:
             if self.config.debug:
                 error_html = (mako_exceptions.html_error_template()
-                                             .render()
+                                             .render(full=False)
                                              .decode('utf-8'))
                 return error_html, True
             raise
@@ -106,7 +114,7 @@ class Build(object):
             previouspath = previoustitle = None
         return previouspath, previoustitle, nextpath, nexttitle
 
-    def parse_meta(self, rst_path):
+    def post_meta(self, rst_path):
         title, buildpath = self.title_buildpath(None, rst_path)
         previouspath, previoustitle, nextpath, nexttitle = self.prev_next(rst_path)
         git_cmd = ['git', 'log', '-n', '1',
@@ -124,41 +132,30 @@ class Build(object):
             'commit': latest_commit,
         }
 
-    def page(self, rst_path):
+    def page_title_buildpath(self, rst_path):
+        'Remove the pages path prefix for getting the buildpath'
         pageroot = os.path.dirname(rst_path)
-        title, buildpath = self.title_buildpath(pageroot, rst_path)
+        return self.title_buildpath(pageroot, rst_path)
+
+    def page(self, rst_path):
+        title, buildpath = self.page_title_buildpath(rst_path)
         context = {
-            'meta': {'blogtree': self.blogtree, 'title': title},
+            'index': self.index,
+            'title': title,
             'content_html': render_rst(rst_path),
         }
         self.write_html('page.html', context, buildpath)
 
-    def index(self):
-        'Build the index page, or render the blog page there'
-        try:
-            pages = [
-                {'title': title, 'path': path.replace(self.config.build, '')}
-                for title, path
-                in map(functools.partial(self.title_buildpath, None),
-                       self.config.pages)
-            ]
-            context = {
-                'meta': {
-                    'blogtree': self.blogtree,
-                    'pages': pages,
-                }
-            }
-            return self.write_html(self.config.index_template,
-                                   context,
-                                   os.path.join(self.config.build,
-                                                'index.html'))
-        except AttributeError as exc:
-            if 'not configured' in str(exc):
-                pass
+    def index_html(self):
+        'Build the index.html'
+        self.write_html(self.config.index_template,
+                        {'index': self.index},
+                        os.path.join(self.config.build, 'index.html'))
 
     def post(self, rst_path):
         context = {
-            'meta': self.parse_meta(rst_path),
+            'index': self.index,
+            'meta': self.post_meta(rst_path),
             'content_html': render_rst(rst_path),
         }
         buildpath = context['meta']['buildpath']
@@ -167,15 +164,15 @@ class Build(object):
     def blog_page(self):
         buildpath = (os.path.join(self.config.build, self.config.blogtree_rst)
                             .replace('rst', 'html'))
-        index_rst, _ = self.render_err(self.config.blogtree_rst,
-                                       {'blogtree': self.blogtree})
+        index_rst, err = self.render_err(self.config.blogtree_rst,
+                                         {'index': self.index})
         content_html = docutils_publish(index_rst, writer_name='html')['html_body']
         context = {
-            'blogtree': self.blogtree,
-            'meta': {'title': 'Blog'},
+            'index': self.index,
+            'title': 'Blog',
             'content_html': content_html,
         }
-        self.write_html('page.html', context, buildpath)
+        return self.write_html('page.html', context, buildpath)
 
     def pages(self, pool):
         pool.map_async(self.page, self.config.pages)
@@ -212,7 +209,7 @@ class Build(object):
         self.pages(pool)
         self.posts(pool)
         self.blog_page()
-        self.index()
+        self.index_html()
         pool.close()
         pool.join()
         print('done.')

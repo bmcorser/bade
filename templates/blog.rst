@@ -1,7 +1,7 @@
 <%!
     import calendar
 %>
-% for year, months in blogtree.items():
+% for year, months in index['blogtree'].items():
 ${year}
 ${''.join('#' for _ in range(len(str(year))))}
 
