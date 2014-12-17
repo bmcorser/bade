@@ -54,7 +54,7 @@ class Build(object):
             for title, path
             in map(self.page_title_buildpath, self.config.pages)
         ]
-        return {'blogtree': self.blogtree, 'pages': pages}
+        return {'blogtree': self._blogtree(), 'pages': pages}
 
     def clean(self):
         'Carelessly wipe out the build dir'
@@ -114,12 +114,27 @@ class Build(object):
             previouspath = previoustitle = None
         return previouspath, previoustitle, nextpath, nexttitle
 
+    def commit_github(self, rst_path):
+        'Return the lastest commit and GitHub link for a given path'
+        try:
+            github_url = os.path.join(self.config.github,
+                                      'blob',
+                                      'master',
+                                      rst_path)
+        except AttributeError:
+            github_url = '#'
+        git_cmd = ['git', 'log', '-n', '1',
+                   '--pretty=format:%h', '--', rst_path]
+        try:
+            commit = subprocess.check_output(git_cmd).decode('utf-8')
+        except subprocess.CalledProcessError:
+            commit = 'HEAD'
+        return commit, github_url
+
     def post_meta(self, rst_path):
         title, buildpath = self.title_buildpath(None, rst_path)
         previouspath, previoustitle, nextpath, nexttitle = self.prev_next(rst_path)
-        git_cmd = ['git', 'log', '-n', '1',
-                   '--pretty=format:%h', '--', rst_path]
-        latest_commit = subprocess.check_output(git_cmd).decode('utf-8')
+        commit, github_url = self.commit_github(rst_path)
         return {
             'date': datetime.date(*map(int, rst_path.split(os.sep)[1:4])),
             'title': title,
@@ -128,8 +143,8 @@ class Build(object):
             'nexttitle': nexttitle,
             'previouspath': previouspath,
             'previoustitle': previoustitle,
-            'github': os.path.join(self.config.github, 'blob', 'master', rst_path),
-            'commit': latest_commit,
+            'github': github_url,
+            'commit': commit,
         }
 
     def page_title_buildpath(self, rst_path):

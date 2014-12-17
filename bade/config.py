@@ -34,14 +34,14 @@ class Configuration(object):
         if self.pygments_directive:
             # Render DOT to SVG
             directives.register_directive('dot-graph', DotgraphDirective)
-        if not isinstance(self.template_dirs, list):
-            raise TypeError('Misconfigured: `template_dirs` should be a list')
-        if not isinstance(self.pages, list):
-            raise TypeError('Misconfigured: `pages` should be a list')
         self._config_dict['pages'] = ["{0}.rst".format(path)
                                       for path in config_dict.get('pages', [])]
         package_templates = os.path.join(environ.get('VIRTUAL_ENV'),
                                          'bade/templates')
+        if not isinstance(self.template_dirs, list):
+            raise TypeError('Misconfigured: `template_dirs` should be a list')
+        if not isinstance(self.pages, list):
+            raise TypeError('Misconfigured: `pages` should be a list')
         self._template_lookup = lookup.TemplateLookup(
             directories=self.template_dirs
         )
