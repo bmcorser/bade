@@ -156,7 +156,7 @@ class Build(object):
         title, buildpath = self.page_title_buildpath(rst_path)
         context = {
             'index': self.index,
-            'title': title,
+            'page_title': title,
             'content_html': render_rst(rst_path),
         }
         self.write_html('page.html', context, buildpath)
@@ -172,6 +172,7 @@ class Build(object):
             'index': self.index,
             'meta': self.post_meta(rst_path),
             'content_html': render_rst(rst_path),
+            'page_title': 'balls',
         }
         buildpath = context['meta']['buildpath']
         self.write_html('post.html', context, buildpath)
@@ -184,7 +185,7 @@ class Build(object):
         content_html = docutils_publish(index_rst, writer_name='html')['html_body']
         context = {
             'index': self.index,
-            'title': 'Blog',
+            'page_title': 'Blog',
             'content_html': content_html,
         }
         return self.write_html('page.html', context, buildpath)
