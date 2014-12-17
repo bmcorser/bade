@@ -10,6 +10,7 @@ Assumptions
 
 This tutorial and indeed Bade itself are written with a few assumptions.
 
+    - You intend to serve from ``/``
     - You're in a \*nix shell
     - You're using Python 3.x
     - You're in a venv_
@@ -23,8 +24,9 @@ Of course you are!
 Pages
 =====
 
-Pages are rST documents that will be rendered but not included in the
-":ref:`Blogtree`".
+Pages are rST documents that want to be rendered and added to the site, but not
+included in the blog. Links to them are provided in the :ref:`context` to all
+:ref:`templates`.
 
 Let's make a ``pages`` directory and put a page there.
 
@@ -40,7 +42,7 @@ And throw some rST in that file.
     About me
     ########
 
-    I like cakes.
+    I like biscuits, especially custard creams.
 
 We need to let Bade know that we've added a page, so let's add an entry to
 ``bade.yaml``, which should look something like this:
@@ -58,6 +60,8 @@ Add all this stuff to Git and commit it:
     commit -m 'Added about page'
 
 We could render our site now, but let's add a post first ...
+
+.. _posts:
 
 Posts
 =====
@@ -94,14 +98,21 @@ midnight as you were reading):
 
     touch blog/$(date +'%Y/%m/%d')/exciting-news.rst
 
-Throw some rST in that file and let's render our micro-blog for the first time.
+Throw some rST in that file and tell Git about it:
+
+.. code-block:: shell
+
+    git add blog
+    git commit -m 'Added blog post'
+
+Let's render our micro-blog for the first time.
 
 .. code-block:: shell
 
     bade
 
 The HTML for the rST files we created above will be rendered in a directory
-called ``_build`` (of course, this can be changed in Config_). You can
+called ``_build`` (of course, this can be changed in :ref:`configuration`). You can
 serve from that directory for development. Things are looking pretty plain
 right now, so after a brief overview of configuration options, we'll look at
 how to add styles and use our own templates.
@@ -112,86 +123,6 @@ directory:
 .. code-block:: shell
 
     echo '_build' >> .gitignore
-
-
-Config
-======
-
-Bade has a few options which can be configured through keys in a YAML file.
-Their effects are detailed below.
-
-``assetpaths``
---------------
-A list of directory paths containing any assets to be copied to the build
-directory. Directory will be preserved. Example:
-
-.. code-block:: yaml
-
-    assetpaths:
-      - assets/images
-      - assets/js
-      - assets/fonts
-
-``blogroot``
-------------
-The directory where the tree of Posts_ will appear. Example:
-
-.. code-block:: yaml
-
-    blogroot: blog
-
-``blogtree_rst``
-----------------
-Path to custom rST template for :ref:`Blogtree`. Example:
-
-.. code-block:: yaml
-
-    blogtree_rst: templates/blogtree.rst
-
-``build``
----------
-Directory to build in. Example:
-
-.. code-block:: yaml
-
-    build: _build
-
-``debug``
----------
-Example:
-
-.. code-block:: yaml
-
-    blogroot: blog
-
-``index_template``
-------------------
-Example:
-
-.. code-block:: yaml
-
-    blogroot: blog
-
-``pages``
----------
-Example:
-
-.. code-block:: yaml
-
-    blogroot: blog
-
-``template_dirs``
------------------
-Directories to add to Mako TemplateLookup_ used by Bade. Example:
-
-.. code-block:: yaml
-
-    template_dirs:
-      - templates
-      - christmas_templates
-
-.. _TemplateLookup: http://docs.makotemplates.org/en/latest/usage.html#using-templatelookup
-
 
 Build
 =====

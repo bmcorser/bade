@@ -10,16 +10,16 @@ class Configuration(object):
     'Holds the defaults for a Build'
 
     _defaults = {
-        'pygments_directive': True,
-        'dotgraph_directive': True,
-        'build': '_build',
-        'template_dirs': ['templates'],
-        'index_template': 'index.html',
+        'assetpaths': [],
         'blogroot': 'blog',
         'blogtree_rst': 'blog.rst',
-        'pages': [],
-        'assetpaths': [],
+        'build': '_build',
         'debug': False,
+        'dotgraph_directive': True,
+        'index_template': 'index.html',
+        'pages': [],
+        'pygments_directive': True,
+        'template_dirs': ['templates'],
     }
 
     def __init__(self, config_dict, overrides=None):
