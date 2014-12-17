@@ -42,11 +42,8 @@ class Configuration(object):
             raise TypeError('Misconfigured: `template_dirs` should be a list')
         if not isinstance(self.pages, list):
             raise TypeError('Misconfigured: `pages` should be a list')
-        self._template_lookup = lookup.TemplateLookup(
-            directories=self.template_dirs
-        )
-        self._default_template_lookup = lookup.TemplateLookup(
-            directories=[package_templates]
+        self.template_lookup = lookup.TemplateLookup(
+            directories=self.template_dirs + [package_templates]
         )
 
     def __getattr__(self, name):
@@ -61,14 +58,6 @@ class Configuration(object):
                     return self._defaults[name]
                 except KeyError:
                     raise AttributeError("'{0}' not configured".format(name))
-
-    def get_template(self, name):
-        'Lookup a template from either packaged templates or configured path'
-        try:
-            template = self._template_lookup.get_template(name)
-        except exceptions.TopLevelLookupException:
-            template = self._default_template_lookup.get_template(name)
-        return template
 
     def setval(self, name, value):
         'Set a configuration value'

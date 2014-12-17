@@ -62,7 +62,7 @@ class Build(object):
 
     def render_err(self, name, context):
         'Render a template, with some debugging'
-        template = self.config.get_template(name)
+        template = self.config.template_lookup.get_template(name)
         try:
             return template.render(**context), None
         except:

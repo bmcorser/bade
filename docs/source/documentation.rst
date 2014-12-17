@@ -120,13 +120,15 @@ Example:
 
 ``template_dirs``
 -----------------
-Directories to add to Mako TemplateLookup_ used by Bade. Example:
+Directories to add to Mako TemplateLookup_ used by Bade (ie. the most preferred
+templates come first). Example:
 
 .. code-block:: yaml
 
     template_dirs:
       - templates
-      - christmas_templates
+      - summer_templates
+      - winter_templates
 
 .. _TemplateLookup: http://docs.makotemplates.org/en/latest/usage.html#using-templatelookup
 

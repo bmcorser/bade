@@ -127,6 +127,61 @@ directory:
 Build
 =====
 
+When you build your site, rST is rendered to HTML and jammed into page or post
+templates, the :ref:`Blogtree` is rendered and the ``index.html`` file is
+rendered too.
+
+Templating
+----------
+The templates provided with Bade are simple, a little bit semantic and work out
+of the box. However, they are plain as you like and don't have any styles_! To
+start hacking your own templates together, download the "sample" templates from
+GitHub_ and go crazy. Let's follow a quick example for changing up our index to
+welcome visitors.
+
+First grab the ``index.html`` template and put it in ``templates`` locally:
+
+.. code-block:: shell
+
+    mkdir templates
+    curl https://raw.githubusercontent.com/bmcorser/bade/master/templates/index.html > templates/index.html
+
+It looks like this:
+
+.. code-block:: mako
+
+    <%inherit file="base.html"/>
+
+    <%block name="title">Index</%block>
+
+    <%block name="header"></%block>
+
+    <%block name="content">
+        <ul>
+        % for page in index['pages']:
+            <li>
+                <a href="${page['path']}">${page['title']}</a>
+            </li>
+        % endfor
+            <li><a href="/blog.html">Blog</a></li>
+        </ul>
+    </%block>
+
+Let's knock out the ``header`` block which was overriding the inherited block
+with nothing so the header didn't render (the inherited ``header`` block will
+now render). Let's also add a big welcome message. Your ``index.html`` will now
+look like this:
+
+.. code-block:: mako
+
+    <%inherit file="base.html"/>
+
+    <%block name="title">Yes, this is blog.</%block>
+
+    <%block name="content">
+        <h1>Hello, computer!</h1>
+    </%block>
+
 Assets
 ------
 
