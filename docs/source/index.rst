@@ -3,8 +3,13 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-bade
-====
+The docs
+========
+
+Welcome to the docs ...
+
+.. image:: _static/bade.svg
+           :width: 300px
 
 Contents:
 

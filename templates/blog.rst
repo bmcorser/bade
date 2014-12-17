@@ -14,7 +14,7 @@ ${''.join('=' for _ in range(len(calendar.month_name[month])))}
 % endfor
 
 % for postmeta in postmetas:
-.. _`${postmeta['title']}`: ${postmeta['buildpath'].replace('_build', '')}
+.. _`${postmeta['title']}`: ${postmeta['localpath']}
 % endfor
 
 % endfor

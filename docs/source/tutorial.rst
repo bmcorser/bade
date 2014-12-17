@@ -33,7 +33,7 @@ Let's make a ``pages`` directory and put a page there.
 .. code-block:: bash
 
     mkir pages
-    touch pages/about.rst
+    touch pages/about-me.rst
 
 And throw some rST in that file.
 
@@ -50,7 +50,7 @@ We need to let Bade know that we've added a page, so let's add an entry to
 .. code-block:: yaml
 
     pages:
-      - pages/about
+      - pages/about-me
 
 Add all this stuff to Git and commit it:
 
@@ -58,6 +58,9 @@ Add all this stuff to Git and commit it:
 
     git add pages bade.yaml
     commit -m 'Added about page'
+
+The title of the page is derived from the file name, in this case the file
+``about-me.rst`` will be titled ``About me``. This holds for posts too.
 
 We could render our site now, but let's add a post first ...
 
@@ -128,16 +131,19 @@ Build
 =====
 
 When you build your site, rST is rendered to HTML and jammed into page or post
-templates, the :ref:`Blogtree` is rendered and the ``index.html`` file is
-rendered too.
+templates, the :ref:`Blogtree` and site index are rendered. Any assets
+specified for inclusion are also copied to the build directory. Optionally
+SCSS/Sass is compiled.
 
 Templating
 ----------
 The templates provided with Bade are simple, a little bit semantic and work out
 of the box. However, they are plain as you like and don't have any styles_! To
-start hacking your own templates together, download the "sample" templates from
-GitHub_ and go crazy. Let's follow a quick example for changing up our index to
-welcome visitors.
+start hacking your own templates together, download the "template" templates
+from GitHub_ and go crazy. Let's follow a quick example for changing up our
+site index to welcome visitors.
+
+.. _GitHub: https://github.com/bmcorser/bade/tree/master/templates
 
 First grab the ``index.html`` template and put it in ``templates`` locally:
 
@@ -167,10 +173,9 @@ It looks like this:
         </ul>
     </%block>
 
-Let's knock out the ``header`` block which was overriding the inherited block
-with nothing so the header didn't render (the inherited ``header`` block will
-now render). Let's also add a big welcome message. Your ``index.html`` will now
-look like this:
+Let's knock out the ``header`` block [#]_ to use the default inherited from
+``base.html``. Let's also add a big welcome message. Your ``index.html`` will
+now look like this:
 
 .. code-block:: mako
 
@@ -181,6 +186,9 @@ look like this:
     <%block name="content">
         <h1>Hello, computer!</h1>
     </%block>
+
+.. [#] In the example above, an empty *but specified* block will override the
+       parent template's block -- even if it has some content.
 
 Assets
 ------

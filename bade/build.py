@@ -8,13 +8,7 @@ import subprocess
 from docutils.core import publish_parts as docutils_publish
 from mako import exceptions as mako_exceptions
 
-from . import utils
-
-
-def render_rst(rst_path):
-    with open(rst_path, 'r') as rst_file:
-        rst_string = rst_file.read()
-    return docutils_publish(rst_string, writer_name='html')['html_body']
+from . import utils, config
 
 
 class Build(object):
@@ -23,38 +17,7 @@ class Build(object):
         'Create config, build blog tree'
         self.config = config
         self.postpaths = self._postpaths()
-        self.index = self._index()
-
-    def _postpaths(self):
-        'Get a list of rST files in configured blog root dir'
-        find = ['find', self.config.blogroot, '-name', '*.rst']
-        try:
-            return sorted(subprocess.check_output(find,
-                                                  stderr=subprocess.STDOUT)
-                                    .decode('utf-8')
-                                    .split(),
-                          reverse=True)
-        except subprocess.CalledProcessError:
-            return tuple()
-
-    def _blogtree(self):
-        D = utils.OrderedDefaultdict
-        blogtree = D(lambda: D(list))
-        for rst_path in self.postpaths:
-            meta = self.post_meta(rst_path)
-            date = datetime.date(*map(int, rst_path.split(os.sep)[1:4]))
-            meta['date'] = date
-            blogtree[date.year][date.month].append(meta)
-        return blogtree
-
-    def _index(self):
-        'Return index of all pages and posts'
-        pages = [
-            {'title': title, 'path': path.replace(self.config.build, '')}
-            for title, path
-            in map(self.page_title_buildpath, self.config.pages)
-        ]
-        return {'blogtree': self._blogtree(), 'pages': pages}
+        self.index = index.BadeIndex(config)
 
     def clean(self):
         'Carelessly wipe out the build dir'
@@ -85,34 +48,6 @@ class Build(object):
         else:
             print("Writing to: {0}".format(buildpath))
 
-    def title_buildpath(self, root, rst_path):
-        'Get the title and the build path from the path to an rST file.'
-        bare_path, ext = os.path.splitext(rst_path)
-        slug = os.path.split(bare_path)[-1]
-        title = ' '.join(slug.split('-')).capitalize()
-        buildpath = (bare_path + '.html').replace(root or self.config.blogroot,
-                                                  self.config.build)
-        return title, buildpath
-
-    def prev_next(self, rst_path):
-        try:
-            next_index = self.postpaths.index(rst_path) - 1
-            if next_index < 0:
-                nextpath = nexttitle = None
-            else:
-                next_rst = self.postpaths[next_index]
-                nexttitle, nextpath = self.title_buildpath(None, next_rst)
-                nextpath = nextpath.replace(self.config.build, '')
-        except IndexError:
-            nextpath = nexttitle = None
-        try:
-            previous_rst = self.postpaths[self.postpaths.index(rst_path) + 1]
-            previoustitle, previouspath = self.title_buildpath(None,
-                                                               previous_rst)
-            previouspath = previouspath.replace(self.config.build, '')
-        except IndexError:
-            previouspath = previoustitle = None
-        return previouspath, previoustitle, nextpath, nexttitle
 
     def commit_github(self, rst_path):
         'Return the lastest commit and GitHub link for a given path'
@@ -133,12 +68,14 @@ class Build(object):
 
     def post_meta(self, rst_path):
         title, buildpath = self.title_buildpath(None, rst_path)
+        localpath = buildpath.replace(self.config.build, '')
         previouspath, previoustitle, nextpath, nexttitle = self.prev_next(rst_path)
         commit, github_url = self.commit_github(rst_path)
         return {
             'date': datetime.date(*map(int, rst_path.split(os.sep)[1:4])),
             'title': title,
             'buildpath': buildpath,
+            'localpath': localpath,
             'nextpath': nextpath,
             'nexttitle': nexttitle,
             'previouspath': previouspath,
@@ -146,11 +83,6 @@ class Build(object):
             'github': github_url,
             'commit': commit,
         }
-
-    def page_title_buildpath(self, rst_path):
-        'Remove the pages path prefix for getting the buildpath'
-        pageroot = os.path.dirname(rst_path)
-        return self.title_buildpath(pageroot, rst_path)
 
     def page(self, rst_path):
         title, buildpath = self.page_title_buildpath(rst_path)
@@ -201,18 +133,25 @@ class Build(object):
         for source in self.config.assetpaths:
             destination = os.path.join(self.config.build, source)
             if os.path.isdir(source):
+                shutil.rmtree(destination)
                 shutil.copytree(source, destination)
             if os.path.isfile(source):
-                shutil.copytree(source, destination)
+                shutil.copy(source, destination)
 
     def sass(self):
         try:
-            source = self.config.sassin,
+            sources = self.config.sassin,
             destination = os.path.join(self.config.build, self.config.sassout)
         except AttributeError as exc:
             if 'not configured' in str(exc):
                 return
-        subprocess.check_call(['sass', source, destination])
+        try:
+            import sass_cli  # NOQA
+        except ImportError:
+            message = 'Sass input configured, but `sass_cli` not installed'
+            raise ImportError(message)
+        for source in sources:
+            subprocess.check_call(['sass', source, destination])
 
     def run(self):
         'Call all the methods to render all the things'
@@ -228,4 +167,3 @@ class Build(object):
         self.index_html()
         pool.close()
         pool.join()
-        print('done.')

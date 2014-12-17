@@ -26,16 +26,15 @@ class Configuration(object):
         'Handle mapping a dict to required configuration parameters'
         if overrides is None:
             overrides = dict()
-        self._config_dict = config_dict
-        self._overrides = overrides
         if self.pygments_directive:
             # Render code blocks using pygments
             directives.register_directive('code-block', pygments_directive)
         if self.pygments_directive:
             # Render DOT to SVG
             directives.register_directive('dot-graph', DotgraphDirective)
-        self._config_dict['pages'] = ["{0}.rst".format(path)
-                                      for path in config_dict.get('pages', [])]
+        config_dict['pages'] = map(self._add_ext, config_dict.get('pages', []))
+        self._config_dict = config_dict
+        self._overrides = overrides
         package_templates = os.path.join(environ.get('VIRTUAL_ENV'),
                                          'bade/templates')
         if not isinstance(self.template_dirs, list):
