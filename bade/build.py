@@ -66,61 +66,38 @@ class Build(object):
             commit = 'HEAD'
         return commit, github_url
 
-    def post_meta(self, rst_path):
-        title, buildpath = self.title_buildpath(None, rst_path)
-        localpath = buildpath.replace(self.config.build, '')
-        previouspath, previoustitle, nextpath, nexttitle = self.prev_next(rst_path)
-        commit, github_url = self.commit_github(rst_path)
-        return {
-            'date': datetime.date(*map(int, rst_path.split(os.sep)[1:4])),
-            'title': title,
-            'buildpath': buildpath,
-            'localpath': localpath,
-            'nextpath': nextpath,
-            'nexttitle': nexttitle,
-            'previouspath': previouspath,
-            'previoustitle': previoustitle,
-            'github': github_url,
-            'commit': commit,
-        }
-
     def page(self, rst_path):
-        title, buildpath = self.page_title_buildpath(rst_path)
-        context = {
-            'index': self.index,
-            'page_title': title,
-            'content_html': render_rst(rst_path),
-        }
+        'Build a page'
+        context, buildpath = self.index.page_context(rst_path)
+        context['content_html'] = utils.render_rst(rst_path)
         self.write_html('page.html', context, buildpath)
 
-    def index_html(self):
-        'Build the index.html'
-        self.write_html(self.config.index_template,
-                        {'index': self.index},
-                        os.path.join(self.config.build, 'index.html'))
-
     def post(self, rst_path):
-        context = {
-            'index': self.index,
-            'meta': self.post_meta(rst_path),
-            'content_html': render_rst(rst_path),
-            'page_title': 'balls',
-        }
-        buildpath = context['meta']['buildpath']
-        self.write_html('post.html', context, buildpath)
+        'Build a page'
+        render_context, buildpath = self.index.post_context(rst_path)
+        render_context['content_html'] = utils.render_rst(rst_path)
+        self.write_html('post.html', render_context, buildpath)
 
     def blog_page(self):
-        buildpath = (os.path.join(self.config.build, self.config.blogtree_rst)
+        blogtree_rst = self.config.blogtree_rst
+        buildpath = (os.path.join(self.config.build, blogtree_rst)
                             .replace('rst', 'html'))
-        index_rst, err = self.render_err(self.config.blogtree_rst,
-                                         {'index': self.index})
-        content_html = docutils_publish(index_rst, writer_name='html')['html_body']
-        context = {
-            'index': self.index,
-            'page_title': 'Blog',
-            'content_html': content_html,
-        }
+        index_rst, _ = self.render_err(blogtree_rst,
+                                       self.index.page_context(blogtree_rst))
+        content_html = docutils_publish(index_rst, writer_name='html')
+        context = self.index.context()
+        context.update({
+            'page_title': self.config.blogname,
+            'content_html': content_html['html_body'],
+        })
         return self.write_html('page.html', context, buildpath)
+
+    def index_html(self):
+        'Build the site index'
+        index_template = self.config.index_template
+        render_context, _ = self.index.page_context()
+        self.write_html(index_template, render_context,
+                        os.path.join(self.config.build, 'index.html'))
 
     def pages(self, pool):
         pool.map_async(self.page, self.config.pages)

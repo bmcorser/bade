@@ -13,6 +13,7 @@ class Configuration(object):
         'assetpaths': [],
         'blogroot': 'blog',
         'blogtree_rst': 'blog.rst',
+        'blogtitle': 'Blog',
         'build': '_build',
         'debug': False,
         'dotgraph_directive': True,
