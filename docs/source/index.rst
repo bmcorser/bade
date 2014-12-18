@@ -20,6 +20,7 @@ Contents:
    :maxdepth: 2
 
    introduction
+   installation
    tutorial
    documentation
 
