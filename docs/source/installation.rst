@@ -11,3 +11,5 @@ widely available:
     - **OSX**: ``brew install graphviz``
 
 Source files are available on GitHub: https://github.com/bmcorser/bade
+
+.. _Graphviz: http://www.graphviz.org/
