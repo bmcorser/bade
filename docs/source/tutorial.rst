@@ -338,6 +338,12 @@ at the address provided.
 There's `a PDF`_ describing DOT syntax in more detail, but `the Wikipedia
 article`_ is also an excellent reference.
 
+.. WARNING::
+
+    This directive directive depends on `Graphviz`_ binaries being available
+    (available on Homebrew and APT).
+
+.. _`Graphviz`: http://www.graphviz.org/
 .. _`a PDF`: http://www.graphviz.org/Documentation/dotguide.pdf
 .. _`the Wikipedia article`: http://en.wikipedia.org/wiki/DOT_%28graph_description_language%29
 

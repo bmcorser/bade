@@ -21,6 +21,7 @@ Plans to extend
 ===============
 In writing Bade, I came up with a few things more I'd like to do:
 
+    - **Test suite**: Everything should be tested, right?
     - **Git integration**: For dirty checking on build, maybe stamping a
       rendered file with its latest commit hash. There are `a few`_ GitHub
       `issues`_ for it.
