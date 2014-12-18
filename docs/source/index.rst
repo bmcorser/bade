@@ -11,6 +11,9 @@ Welcome to the docs ...
 .. image:: _static/bade.svg
            :width: 300px
 
+Micro-blogging with rST
+-----------------------
+
 Contents:
 
 .. toctree::
