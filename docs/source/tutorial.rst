@@ -53,8 +53,8 @@ Pages
 =====
 
 Pages are rST documents that want to be rendered and added to the site, but not
-included in the blog. Links to them are provided in the :ref:`context` to all
-:ref:`templates`.
+included in the blog. Links to them are provided in the context to all
+templates (we'll get to Templating_).
 
 Let's make a ``pages`` directory and put a page there.
 
@@ -90,6 +90,8 @@ The title of the page is derived from the file name, in this case the file
 ``about-me.rst`` will be titled ``About me``. This holds for posts too.
 
 We could render our site now, but let's add a post first ...
+
+.. _Mako: http://www.makotemplates.org/
 
 .. _posts:
 
@@ -195,12 +197,11 @@ It looks like this:
 
     <%block name="content_block">
         <ul>
-        % for page in index['pages']:
+        % for page in pages:
             <li>
                 <a href="${page['path']}">${page['title']}</a>
             </li>
         % endfor
-            <li><a href="/blog.html">Blog</a></li>
         </ul>
     </%block>
 
