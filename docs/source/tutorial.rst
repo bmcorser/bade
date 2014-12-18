@@ -1,3 +1,5 @@
+.. _tutorial:
+
 Tutorial
 ########
 
@@ -251,6 +253,7 @@ Red text? I rather think so. Everyone likes red text.
     body {
       color: red;
     }
+
 Next we need to include this in our templates, so we need to override another
 default, this time the ``base.html`` where our ``<head>`` is specified. Let's
 grab is like we did before:
@@ -311,6 +314,32 @@ Then alter ``pages/about-me.rst`` to reference this image:
     I write ...
 
     .. image:: /assets/images/python.png
+
+.. _dotgraph:
+
+``dot-graph`` directive
+=======================
+Sometimes we all like to draw a graph, but how to store it in plaintext? One
+answer is to use DOT. The directive for a graph written in DOT might look
+something like this:
+
+.. code-block:: rst
+
+    .. dot-graph:: /assets/images/graph.svg
+
+        digraph G {
+            a -> b -> c;
+            b -> d;
+        }
+
+This would render an SVG to the build directory that was available to the DOM
+at the address provided.
+
+There's `a PDF`_ describing DOT syntax in more detail, but `the Wikipedia
+article`_ is also an excellent reference.
+
+.. _`a PDF`: http://www.graphviz.org/Documentation/dotguide.pdf
+.. _`the Wikipedia article`: http://en.wikipedia.org/wiki/DOT_%28graph_description_language%29
 
 Debugging templates
 ===================

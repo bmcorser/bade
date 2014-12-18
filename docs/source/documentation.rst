@@ -46,8 +46,10 @@ that lists links to pages. The ``pages`` and ``blogtree`` context variable
 Blogtree
 ========
 
-The way that Bade tells where :ref:`Posts` appear chronologically is rather
-manual. A tree of directories with branches
+The way that Bade tells where posts appear chronologically is rather manual.
+It's the responsibility of the user to place the content of their pose in a
+tree of directories where the first level denotes year, the second month and
+the third day. It's covered in the :ref:`posts` section of the :ref:`tutorial`.
 
 .. _configuration:
 
@@ -79,7 +81,7 @@ The directory where the tree of Posts_ will appear. Example:
 
 ``blogtree_rst``
 ----------------
-Path to custom rST template for :ref:`Blogtree`. Example:
+Path to custom rST template for blog index page. Example:
 
 .. code-block:: yaml
 
@@ -95,23 +97,25 @@ Directory to build in. Example:
 
 ``debug``
 ---------
-Example:
+
+Just asks Mako for :ref:`debugging` output. Override with ``--debug`` on the
+command line. Example:
 
 .. code-block:: yaml
 
-    blogroot: blog
+    debug: true
 
 ``index_template``
 ------------------
-Example:
+The template to look up to render the front page of the site. Example:
 
 .. code-block:: yaml
 
-    blogroot: blog
+    index_template: index.html
 
 ``pages``
 ---------
-Example:
+Pages and external links, string is a page, dict is an external link. Example:
 
 .. code-block:: yaml
 
