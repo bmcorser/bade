@@ -1,20 +1,20 @@
 <%!
     import calendar
 %>
-% for year, months in index['blogtree'].items():
+% for year, months in blogtree.items():
 ${year}
 ${''.join('#' for _ in range(len(str(year))))}
 
-% for month, postmetas in months.items():
+% for month, posts in months.items():
 ${calendar.month_name[month]}
 ${''.join('=' for _ in range(len(calendar.month_name[month])))}
 
-% for postmeta in postmetas:
-    - `${postmeta['title']}`_
+% for post in posts:
+    - `${post['title']}`_
 % endfor
 
-% for postmeta in postmetas:
-.. _`${postmeta['title']}`: ${postmeta['localpath']}
+% for post in posts:
+.. _`${post['title']}`: ${post['path']}
 % endfor
 
 % endfor

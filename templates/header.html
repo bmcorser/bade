@@ -1,10 +1,9 @@
 <header>
     <ul>
-    % for page in index['pages']:
+    % for page in nav:
         <li>
            <a href="${page['path']}">${page['title']}</a>
         </li>
     % endfor
-        <li><a href="/blog.html">Blog</a></li>
     </ul>
 </header>

@@ -1,4 +1,3 @@
-import datetime
 import os
 import subprocess
 
@@ -9,89 +8,118 @@ class BadeIndex(object):
 
     def __init__(self, config):
         self.config = config
-        self.posts = self._posts()
-        self.pages = self._pages()
+        self.pages, self.nav = self.page_indexes()
+        self.posts = self.posts_index()
+        self.blogtree = self._blogtree()
 
-    def _posts(self):
-        'Get a list of rST files in configured blog root dir'
+    def page_indexes(self):
+        pages = dict()
+        nav = [{'title': 'Home', 'path': '/'}]
+        found_blog = False
+        for page in self.config.pages:
+            if isinstance(page, str):
+                page_meta = {
+                    'title': utils.rst_title(page),
+                    'path': self.page_path(page),
+                }
+                nav.append(page_meta)
+                page_meta.update({
+                    'build': self.page_build(page),
+                })
+                pages[page] = page_meta
+            elif isinstance(page, dict):
+                title, path = page.popitem()
+                nav.append({'title': title, 'path': path})
+                if title.lower() == 'blog':
+                    found_blog = True
+        if found_blog is not True:
+            nav.append({'title': 'Blog', 'path': '/blog.html'})
+        return pages, nav
+
+    def posts_index(self):
+        return_dict = dict()
         find = ['find', self.config.blogroot, '-name', '*.rst']
         try:
-            return sorted(subprocess.check_output(find,
+            paths_list = (subprocess.check_output(find,
                                                   stderr=subprocess.STDOUT)
                                     .decode('utf-8')
-                                    .split(),
-                          reverse=True)
+                                    .split())
         except subprocess.CalledProcessError:
-            return tuple()
+            paths_list = list()
+        for idx, rst_path in enumerate(paths_list):
+            if idx == 0:
+                prev_post = None
+            else:
+                prev_post = {
+                    'title': utils.rst_title(paths_list[idx - 1]),
+                    'path': self.post_path(paths_list[idx - 1]),
+                }
+            if idx == (len(paths_list) - 1):
+                next_post = None
+            else:
+                next_post = {
+                    'title': utils.rst_title(paths_list[idx + 1]),
+                    'path': self.post_path(paths_list[idx + 1]),
+                }
+            return_dict[rst_path] = {
+                'date': utils.post_date(rst_path),
+                'title': utils.rst_title(rst_path),
+                'build': self.post_build(rst_path),
+                'path': self.post_path(rst_path),
+                'next_post': next_post,
+                'prev_post': prev_post,
+            }
+        return return_dict
 
     def _blogtree(self):
+        'Monthly dict of posts'
         D = utils.OrderedDefaultdict
         blogtree = D(lambda: D(list))
-        for rst_path in self.posts:
-            date = datetime.date(*map(int, rst_path.split(os.sep)[1:4]))
+        for postpath in self.posts:
+            date = utils.post_date(postpath)
             blogtree[date.year][date.month].append({
-                'date': date,
-                'title': utils.rst_title(rst_path),
+                'title': utils.rst_title(postpath),
+                'path': self.post_path(postpath),
             })
         return blogtree
 
-    def _pages(self):
-        pages_list = list()
-        for page in self.config.pages:
-            if isinstance(page, str):
-                pages_list.append({
-                    'title': utils.rst_title(page),
-                    'path': os.path.join('/', page + '.html'),
-                    'build': os.path.join(self.config.build, page + '.html'),
-                })
-            elif isinstance(page, dict):
-                title, path = page.popitem()
-                pages_list.append({'title': title, 'path': path})
-        return pages_list
-
-    def _index(self):
+    def navigation(self):
         'Return index of all pages and posts'
-        return {'blogtree': self._blogtree(), 'pages': self._pages()}
+        return {'blogtree': self.blogtree, 'pages': self.pages}
+
+    def page_build(self, rst_path):
+        'Return the page to write a rendered post'
+        _, page_name = os.path.split(rst_path)
+        return os.path.join(self.config.build, page_name + '.html')
+
+    def page_path(self, rst_path):
+        'Return the path for href to page'
+        return self.page_build(rst_path).replace(self.config.build, '')
 
     def post_build(self, rst_path):
         'Return the path to write a rendered post'
         return (rst_path[:-4] + '.html').replace(self.config.blogroot,
                                                  self.config.build)
 
-    def prev_next(self, rst_path):
-        try:
-            next_index = self.postpaths.index(rst_path) - 1
-            if next_index < 0:
-                nextpath = nexttitle = None
-            else:
-                next_rst = self.postpaths[next_index]
-                nexttitle, nextpath = self.title_buildpath(None, next_rst)
-                nextpath = nextpath.replace(self.config.build, '')
-        except IndexError:
-            nextpath = nexttitle = None
-        try:
-            previous_rst = self.postpaths[self.postpaths.index(rst_path) + 1]
-            previoustitle, previouspath = self.title_buildpath(None,
-                                                               previous_rst)
-            previouspath = previouspath.replace(self.config.build, '')
-        except IndexError:
-            previouspath = previoustitle = None
-        return previouspath, previoustitle, nextpath, nexttitle
+    def post_path(self, rst_path):
+        'Return the path for href to post'
+        return self.post_build(rst_path).replace(self.config.build, '')
 
-    def post_meta(self, rst_path):
-        title, buildpath = self.title_buildpath(None, rst_path)
-        localpath = buildpath.replace(self.config.build, '')
-        previouspath, previoustitle, nextpath, nexttitle = self.prev_next(rst_path)
-        commit, github_url = self.commit_github(rst_path)
+    def fresh_context(self):
+        'Return a fresh context with references to nav, blogtree'
         return {
-            'date': datetime.date(*map(int, rst_path.split(os.sep)[1:4])),
-            'title': title,
-            'buildpath': buildpath,
-            'localpath': localpath,
-            'nextpath': nextpath,
-            'nexttitle': nexttitle,
-            'previouspath': previouspath,
-            'previoustitle': previoustitle,
-            'github': github_url,
-            'commit': commit,
+            'nav': self.nav,
+            'blogtree': self.blogtree,
         }
+
+    def page_context(self, rst_path):
+        'Template context for a page'
+        context = self.fresh_context()
+        context.update(self.pages[rst_path])
+        return context, self.page_build(rst_path)
+
+    def post_context(self, rst_path):
+        'Template context for a post'
+        context = self.fresh_context()
+        context.update(self.posts[rst_path])
+        return context, self.post_build(rst_path)

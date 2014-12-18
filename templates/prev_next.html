@@ -1,14 +1,14 @@
 <div class="previous-next">
-    % if meta['previouspath']:
+    % if prev_post:
         <div class='previous-post'>
-            <a href="${meta['previouspath']}" />previous</a> 
-            ${meta['previoustitle']}
+            <a href="${prev_post['path']}" />previous</a> 
+            ${prev_post['title']}
         </div>
     % endif
-    % if meta['nextpath']:
+    % if next_post:
         <div class='next-post'>
-            ${meta['nexttitle']}
-            <a href="${meta['nextpath']}" />next</a> 
+            ${next_post['title']}
+            <a href="${next_post['path']}" />next</a> 
         </div>
     % endif
 </div>

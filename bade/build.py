@@ -1,14 +1,15 @@
 from __future__ import unicode_literals
-import datetime
 import os
 import multiprocessing
 import shutil
 import subprocess
 
 from docutils.core import publish_parts as docutils_publish
+from os import environ
 from mako import exceptions as mako_exceptions
+from mako import lookup as mako_lookup
 
-from . import utils, config
+from . import utils, index
 
 
 class Build(object):
@@ -16,7 +17,11 @@ class Build(object):
     def __init__(self, config):
         'Create config, build blog tree'
         self.config = config
-        self.postpaths = self._postpaths()
+        package_templates = os.path.join(environ.get('VIRTUAL_ENV'),
+                                         'bade/templates')
+        self.template_lookup = mako_lookup.TemplateLookup(
+            directories=config.template_dirs + [package_templates]
+        )
         self.index = index.BadeIndex(config)
 
     def clean(self):
@@ -25,7 +30,7 @@ class Build(object):
 
     def render_err(self, name, context):
         'Render a template, with some debugging'
-        template = self.config.template_lookup.get_template(name)
+        template = self.template_lookup.get_template(name)
         try:
             return template.render(**context), None
         except:
@@ -66,11 +71,14 @@ class Build(object):
             commit = 'HEAD'
         return commit, github_url
 
-    def page(self, rst_path):
+    def page(self, page_path):
         'Build a page'
-        context, buildpath = self.index.page_context(rst_path)
-        context['content_html'] = utils.render_rst(rst_path)
+        context, buildpath = self.index.page_context(page_path)
+        context['content_html'] = utils.render_rst(page_path + '.rst')
         self.write_html('page.html', context, buildpath)
+
+    def pages(self, pool):
+        pool.map_async(self.page, self.index.pages)
 
     def post(self, rst_path):
         'Build a page'
@@ -83,11 +91,11 @@ class Build(object):
         buildpath = (os.path.join(self.config.build, blogtree_rst)
                             .replace('rst', 'html'))
         index_rst, _ = self.render_err(blogtree_rst,
-                                       self.index.page_context(blogtree_rst))
+                                       self.index.fresh_context())
         content_html = docutils_publish(index_rst, writer_name='html')
-        context = self.index.context()
+        context = self.index.fresh_context()
         context.update({
-            'page_title': self.config.blogname,
+            'title': self.config.blogtitle,
             'content_html': content_html['html_body'],
         })
         return self.write_html('page.html', context, buildpath)
@@ -95,15 +103,15 @@ class Build(object):
     def index_html(self):
         'Build the site index'
         index_template = self.config.index_template
-        render_context, _ = self.index.page_context()
+        render_context = self.index.fresh_context()
+        render_context.update({
+            'title': 'Home',
+        })
         self.write_html(index_template, render_context,
                         os.path.join(self.config.build, 'index.html'))
 
-    def pages(self, pool):
-        pool.map_async(self.page, self.config.pages)
-
     def posts(self, pool):
-        pool.map_async(self.post, self.postpaths)
+        pool.map_async(self.post, self.index.posts)
 
     def copy_assetpaths(self):
         'Copy everything specified in the config to the build directory'

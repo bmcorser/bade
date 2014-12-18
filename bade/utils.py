@@ -1,4 +1,5 @@
 import collections
+import datetime
 import os
 from docutils.core import publish_parts as docutils_publish
 
@@ -37,3 +38,8 @@ def rst_title(rst_path):
     bare_path, ext = os.path.splitext(rst_path)
     slug = os.path.split(bare_path)[-1]
     return ' '.join(slug.split('-')).capitalize()
+
+
+def post_date(rst_path):
+    'datetime from post path'
+    return datetime.date(*map(int, rst_path.split(os.sep)[1:4]))
