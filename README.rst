@@ -47,4 +47,4 @@ Documentation
 It's here_, there's a tutorial_.
 
 .. _here: http://pythonhosted.org/bade/
-.. _here: http://pythonhosted.org/bade/tutorial.html
+.. _tutorial: http://pythonhosted.org/bade/tutorial.html
