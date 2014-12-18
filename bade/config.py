@@ -1,15 +1,14 @@
-import os
-from os import environ
+import functools
 from docutils.parsers.rst import directives
 
-from .directives import pygments_directive, DotgraphDirective
+from .directives import pygments_directive, closed_dotgraphdirective
 
 
 class Configuration(object):
     'Holds the defaults for a Build'
 
     _defaults = {
-        'assetpaths': [],
+        'assetpaths': ['assets'],
         'blogroot': 'blog',
         'blogtree_rst': 'blog.rst',
         'blogtitle': 'Blog',
@@ -31,9 +30,10 @@ class Configuration(object):
         if self.pygments_directive:
             # Render code blocks using pygments
             directives.register_directive('code-block', pygments_directive)
-        if self.pygments_directive:
+        if self.dotgraph_directive:
             # Render DOT to SVG
-            directives.register_directive('dot-graph', DotgraphDirective)
+            closed_build = closed_dotgraphdirective(self.build)
+            directives.register_directive('dot-graph', closed_build)
         if not isinstance(self.template_dirs, list):
             raise TypeError('Misconfigured: `template_dirs` should be a list')
         if not isinstance(self.pages, list):

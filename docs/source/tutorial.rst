@@ -13,13 +13,39 @@ This tutorial and indeed Bade itself are written with a few assumptions.
     - You intend to serve from ``/``
     - You're in a \*nix shell
     - You're using Python 3.x
-    - You're in a venv_
     - You're in a Git_ repo
 
 Of course you are!
 
 .. _Git: http://www.git-scm.com/
-.. _venv: https://docs.python.org/3/library/venv.html
+
+Setup
+=====
+Bade is configured by YAML file (vaguely inspired by Grunt_) which holds
+something like a site map and paths to template and asset directories. The
+default name for Bade's configuration YAML is ``bade.yaml`` [#]_, so let's
+create that file and add some basic configuration:
+
+.. _Grunt: http://gruntjs.com/
+
+.. code-block:: yaml
+
+    blogtitle: Blog
+    pages:
+      - pages/about-me
+      - github: https://github.com
+
+We've specified two pages, one is a local "about" page and the other is an
+external link to github. The first is a string ``pages/about-me`` and tells
+Bade there is an rST document ``pages/about-me.rst`` that should be rendered
+and added to the site navigation list, the second is a mapping of name to URL
+which should also be added to the navigation list, but since it's an external
+link no rST needs to be rendered. The order pages are specified in the YAML is
+significant; it's the order they will be rendered in the navigation list. In
+the next section we'll create our "About me" page.
+
+.. [#] You can call it something else and specify that on the command line
+
 
 Pages
 =====
@@ -32,7 +58,7 @@ Let's make a ``pages`` directory and put a page there.
 
 .. code-block:: bash
 
-    mkir pages
+    mkdir pages
     touch pages/about-me.rst
 
 And throw some rST in that file.
@@ -44,8 +70,7 @@ And throw some rST in that file.
 
     I like biscuits, especially custard creams.
 
-We need to let Bade know that we've added a page, so let's add an entry to
-``bade.yaml``, which should look something like this:
+This is the page that is referred to in our configuration YAML:
 
 .. code-block:: yaml
 
@@ -57,7 +82,7 @@ Add all this stuff to Git and commit it:
 .. code-block:: shell
 
     git add pages bade.yaml
-    commit -m 'Added about page'
+    git commit -m 'Added about page'
 
 The title of the page is derived from the file name, in this case the file
 ``about-me.rst`` will be titled ``About me``. This holds for posts too.
@@ -88,14 +113,15 @@ don't need to be explicitly added to ``bade.yaml``::
             └── 16
                 └── today.rst
 
-The directory for "today" can be created with some shell subsitution:
+The default directory for posts is ``blog``, but this can be configured [#]_. The
+directory for "today" can be created with some shell subsitution:
 
 .. code-block:: shell
 
     mkdir -p blog/$(date +'%Y/%m/%d')
 
 You can add an rST file to the "today" directory the same way (unless it turned
-midnight as you were reading):
+midnight as you were typing):
 
 .. code-block:: shell
 
@@ -115,8 +141,8 @@ Let's render our micro-blog for the first time.
     bade
 
 The HTML for the rST files we created above will be rendered in a directory
-called ``_build`` (of course, this can be changed in :ref:`configuration`). You can
-serve from that directory for development. Things are looking pretty plain
+called ``_build`` (of course, this can be changed in :ref:`configuration`). You
+can serve from that directory for development. Things are looking pretty plain
 right now, so after a brief overview of configuration options, we'll look at
 how to add styles and use our own templates.
 
@@ -126,6 +152,8 @@ directory:
 .. code-block:: shell
 
     echo '_build' >> .gitignore
+
+.. [#] See :ref:`configuration` for all the options.
 
 Build
 =====
@@ -145,7 +173,8 @@ site index to welcome visitors.
 
 .. _GitHub: https://github.com/bmcorser/bade/tree/master/templates
 
-First grab the ``index.html`` template and put it in ``templates`` locally:
+First grab the remote ``index.html`` template and put it in ``templates`` [#]_
+locally:
 
 .. code-block:: shell
 
@@ -158,11 +187,11 @@ It looks like this:
 
     <%inherit file="base.html"/>
 
-    <%block name="title">Index</%block>
+    <%block name="title_block">Index</%block>
 
-    <%block name="header"></%block>
+    <%block name="header_block"></%block>
 
-    <%block name="content">
+    <%block name="content_block">
         <ul>
         % for page in index['pages']:
             <li>
@@ -181,27 +210,113 @@ now look like this:
 
     <%inherit file="base.html"/>
 
-    <%block name="title">Yes, this is blog.</%block>
+    <%block name="title_block">Yes, this is blog.</%block>
 
-    <%block name="content">
+    <%block name="content_block">
         <h1>Hello, computer!</h1>
     </%block>
 
+Let's build again by running ``bade`` and check things are looking how we
+expect. This is cool, but our blog is still looking plain. Let's spice it up a
+bit by adding some CSS and images.
+
+.. [#] This is the default templates directory, but can be configured (see
+       :ref:`configuration`).
 .. [#] In the example above, an empty *but specified* block will override the
        parent template's block -- even if it has some content.
 
 Assets
 ------
+By default, everything in a directory called ``assets`` will be copied to the
+build directory and be available at ``/assets`` when serving.
+
+Anything else your site needs apart from its rendered rST can be included by
+adding to the ``assetpaths`` list in the configuration YAML. Let's see how to
+add styles and put an image in blog post
 
 Styles
 ^^^^^^
+First create an assets directory and add a stylesheet that will make our site
+look really cool:
+
+.. code-block:: shell
+
+    mkdir -p assets/css
+    touch assets/css/styles.css
+
+Red text? I rather think so. Everyone likes red text.
+
+.. code-block:: css
+
+    body {
+      color: red;
+    }
+Next we need to include this in our templates, so we need to override another
+default, this time the ``base.html`` where our ``<head>`` is specified. Let's
+grab is like we did before:
+
+.. code-block:: shell
+
+    curl https://raw.githubusercontent.com/bmcorser/bade/master/templates/base.html > templates/base.html
+
+The base template is pretty simple, it pretty much just provides a few blocks
+to override:
+
+.. code-block:: mako
+
+    <html>
+        <head>
+            <meta charset="UTF-8">
+            <title><%block name="title_block">${title}</%block></title>
+        </head>
+        <body>
+            <%block name="header_block">
+                <%include file="header.html" />
+            </%block>
+            <%block name="content_block" />
+            <%block name="footer_block" />
+        </body>
+    </html>
+
+Add the ``<link>`` somewhere in the ``<head>`` the path should treat the build
+directory as root:
+
+.. code-block:: html
+
+    <link href="/assets/css/styles.css" rel="stylesheet" type="text/css" />
+
+Build the site by invoking ``bade`` and check the technique! It's all red, yo.
 
 Images
 ^^^^^^
 
-Publishing
-==========
+Including images in the build is as easy as dumping them in the assets
+directory. Local images can then be referenced from your rST in an ``image``
+directive. Let's try it, first let's get an image in our assets directory:
 
-Debugging
-=========
+.. code-block:: shell
+
+    mkdir assets/images
+    curl https://www.python.org/static/img/python-logo@2x.png > assets/images/python.png
+
+Then alter ``pages/about-me.rst`` to reference this image:
+
+.. code-block:: rst
+
+    About me
+    ########
+
+    I like biscuits, especially custard creams.
+
+    I write ...
+
+    .. image:: /assets/images/python.png
+
+Debugging templates
+===================
+Bade hooks into Mako's excellent debugging output with the ``--debug`` flag.
+Once the build is completed, there'll be a message pointing you to files to
+inspect through the browser::
+
+    Debug HTML written to: ../_build/about.html
 

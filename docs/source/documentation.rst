@@ -3,44 +3,43 @@
 Documentation
 #############
 
-Docutils / rST
-==============
+Colophon
+========
 
-Mako
-====
+
+Bade mostly leans on other things.
+
+    - **Docutils / rST**: Bade uses Docutils to process plaintext rST documents
+      into markup, which will be familiar to Python developers. Probably the
+      most useful resource is their `quick reference`_, but there is full
+      documentation available on the `Docutils homepage`_.
+    - **Mako**: Templates are rendered with Mako_, a templating engine written
+      by zzzeek_. It has inheritance, is fast and lets your do whatever.
+
+.. _`quick reference`: http://docutils.sourceforge.net/
+.. _`Docutils homepage`: http://docutils.sourceforge.net/docs/user/rst/quickref.html
+.. _Mako: http://www.makotemplates.org/
+.. _zzzeek: http://techspot.zzzeek.org/
 
 .. _templates:
 
 Templates
 =========
+Bade uses a bunch of templates which are pretty empty and intended to be simple
+to customise to the specific applications. The best way to get an idea of how
+things are laid out is to `look at the markup`_ and see how the ``<%block>``
+elements are arranged in the ``base.html`` template on GitHub.
+
+.. _`look at the markup`: https://github.com/bmcorser/bade/blob/master/templates/base.html
+
 
 .. _context:
 
 Context
 -------
 
-``base.html``
--------------
-
-``index.html``
---------------
-
-``header.html``
----------------
-
-``page.html``
--------------
-
-``post.html``
--------------
-
-``blog.html``
--------------
-
-``prev_next.html``
-------------------
-
-
+Another interesting template to look at would be the ``header.html`` template
+that lists links to pages. The ``pages`` and ``blogtree`` context variable
 
 .. _blogtree:
 
@@ -116,12 +115,17 @@ Example:
 
 .. code-block:: yaml
 
-    blogroot: blog
+    pages:
+      - pages/about
+      - pages/projects
+      - github: https://github.com/johndoe
 
 ``template_dirs``
 -----------------
 Directories to add to Mako TemplateLookup_ used by Bade (ie. the most preferred
-templates come first). Example:
+templates come first). The packaged templates are always part of this lookup,
+so if a required template isn't found in a directory listed here, it will be
+available. Example:
 
 .. code-block:: yaml
 
@@ -131,5 +135,3 @@ templates come first). Example:
       - winter_templates
 
 .. _TemplateLookup: http://docs.makotemplates.org/en/latest/usage.html#using-templatelookup
-
-

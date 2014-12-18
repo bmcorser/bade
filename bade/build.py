@@ -10,6 +10,7 @@ from mako import exceptions as mako_exceptions
 from mako import lookup as mako_lookup
 
 from . import utils, index
+lmap = lambda fn, *it: list(map(fn, *it))  # But Guido, I _like_ `map`!
 
 
 class Build(object):
@@ -77,8 +78,8 @@ class Build(object):
         context['content_html'] = utils.render_rst(page_path + '.rst')
         self.write_html('page.html', context, buildpath)
 
-    def pages(self, pool):
-        pool.map_async(self.page, self.index.pages)
+    def pages(self):
+        lmap(self.page, self.index.pages)
 
     def post(self, rst_path):
         'Build a page'
@@ -110,17 +111,22 @@ class Build(object):
         self.write_html(index_template, render_context,
                         os.path.join(self.config.build, 'index.html'))
 
-    def posts(self, pool):
-        pool.map_async(self.post, self.index.posts)
+    def posts(self):
+        lmap(self.post, self.index.posts)
 
     def copy_assetpaths(self):
         'Copy everything specified in the config to the build directory'
         for source in self.config.assetpaths:
             destination = os.path.join(self.config.build, source)
+            print("Copying {0} to {1}".format(source, destination))
             if os.path.isdir(source):
-                shutil.rmtree(destination)
+                shutil.rmtree(destination, ignore_errors=True)
                 shutil.copytree(source, destination)
             if os.path.isfile(source):
+                if os.path.exists(destination):
+                    os.remove(destination)
+                else:
+                    os.makedirs(os.path.split(destination)[0])
                 shutil.copy(source, destination)
 
     def sass(self):
@@ -140,15 +146,11 @@ class Build(object):
 
     def run(self):
         'Call all the methods to render all the things'
-        pool = multiprocessing.Pool(multiprocessing.cpu_count())
         if self.config.debug:
             pass
-        pool.map_async = lambda fn, *it: list(map(fn, *it))
         self.copy_assetpaths()
         self.sass()
-        self.pages(pool)
-        self.posts(pool)
+        self.pages()
+        self.posts()
         self.blog_page()
         self.index_html()
-        pool.close()
-        pool.join()
