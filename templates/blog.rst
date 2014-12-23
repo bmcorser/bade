@@ -1,5 +1,6 @@
 <%!
     import calendar
+    import hashlib
 %>
 % for year, months in blogtree.items():
 ${year}
@@ -10,11 +11,15 @@ ${calendar.month_name[month]}
 ${''.join('=' for _ in range(len(calendar.month_name[month])))}
 
 % for post in posts:
-    - `${post['title']}`_
+    - |${post['id']}|_
 % endfor
 
 % for post in posts:
-.. _`${post['title']}`: ${post['path']}
+.. |${post['id']}| raw:: html
+
+    ${post['docutils']['title'] | n}
+
+.. _${post['id']}: ${post['path']}
 % endfor
 
 % endfor

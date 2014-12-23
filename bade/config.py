@@ -1,4 +1,3 @@
-import functools
 from docutils.parsers.rst import directives
 
 from .directives import pygments_directive, closed_dotgraphdirective

@@ -1,15 +1,15 @@
 from __future__ import unicode_literals
 import os
-import multiprocessing
 import shutil
 import subprocess
 
+from distutils import dir_util
 from docutils.core import publish_parts as docutils_publish
 from os import environ
 from mako import exceptions as mako_exceptions
 from mako import lookup as mako_lookup
 
-from . import utils, index
+from . import index
 lmap = lambda fn, *it: list(map(fn, *it))  # But Guido, I _like_ `map`!
 
 
@@ -54,28 +54,18 @@ class Build(object):
         else:
             print("Writing to: {0}".format(buildpath))
 
-
     def commit_github(self, rst_path):
         'Return the lastest commit and GitHub link for a given path'
+        G = ['git', 'log', '-n', '1', '--pretty=format:%h', '--', rst_path]
         try:
-            github_url = os.path.join(self.config.github,
-                                      'blob',
-                                      'master',
-                                      rst_path)
-        except AttributeError:
-            github_url = '#'
-        git_cmd = ['git', 'log', '-n', '1',
-                   '--pretty=format:%h', '--', rst_path]
-        try:
-            commit = subprocess.check_output(git_cmd).decode('utf-8')
+            commit = subprocess.check_output(G).decode('utf-8')
         except subprocess.CalledProcessError:
             commit = 'HEAD'
-        return commit, github_url
+        return commit
 
     def page(self, page_path):
         'Build a page'
         context, buildpath = self.index.page_context(page_path)
-        context['content_html'] = utils.render_rst(page_path + '.rst')
         self.write_html('page.html', context, buildpath)
 
     def pages(self):
@@ -84,20 +74,23 @@ class Build(object):
     def post(self, rst_path):
         'Build a page'
         render_context, buildpath = self.index.post_context(rst_path)
-        render_context['content_html'] = utils.render_rst(rst_path)
+        render_context['commit'] = self.commit_github(rst_path)
         self.write_html('post.html', render_context, buildpath)
 
     def blog_page(self):
         blogtree_rst = self.config.blogtree_rst
         buildpath = (os.path.join(self.config.build, blogtree_rst)
                             .replace('rst', 'html'))
-        index_rst, _ = self.render_err(blogtree_rst,
-                                       self.index.fresh_context())
-        content_html = docutils_publish(index_rst, writer_name='html')
+        index_rst, err = self.render_err(blogtree_rst,
+                                         self.index.fresh_context())
+        if err:
+            with open(buildpath, 'w') as htmlfile:
+                htmlfile.write(index_rst)
+            return
         context = self.index.fresh_context()
         context.update({
-            'title': self.config.blogtitle,
-            'content_html': content_html['html_body'],
+            'title_text': self.config.blogtitle,
+            'docutils': docutils_publish(index_rst, writer_name='html'),
         })
         return self.write_html('page.html', context, buildpath)
 
@@ -120,13 +113,15 @@ class Build(object):
             destination = os.path.join(self.config.build, source)
             print("Copying {0} to {1}".format(source, destination))
             if os.path.isdir(source):
-                shutil.rmtree(destination, ignore_errors=True)
-                shutil.copytree(source, destination)
+                dir_util.copy_tree(source, destination)
             if os.path.isfile(source):
                 if os.path.exists(destination):
                     os.remove(destination)
                 else:
-                    os.makedirs(os.path.split(destination)[0])
+                    try:
+                        os.makedirs(os.path.split(destination)[0])
+                    except FileExistsError:
+                        pass
                 shutil.copy(source, destination)
 
     def sass(self):

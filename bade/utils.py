@@ -2,7 +2,26 @@ import collections
 import datetime
 import os
 from docutils.core import publish_parts as docutils_publish
+from html.parser import HTMLParser
 
+class MLStripper(HTMLParser):
+
+    def __init__(self):
+        self.reset()
+        self.strict = False
+        self.convert_charrefs = True
+        self.fed = []
+
+    def handle_data(self, d):
+        self.fed.append(d)
+
+    def get_data(self):
+        return ''.join(self.fed)
+
+def strip_tags(html):
+    s = MLStripper()
+    s.feed(html)
+    return s.get_data()
 
 class OrderedDefaultdict(collections.OrderedDict):
 
@@ -22,15 +41,11 @@ class OrderedDefaultdict(collections.OrderedDict):
         self[key] = default = self.default_factory()
         return default
 
-    def __reduce__(self):  # optional, for pickle support
-        args = (self.default_factory,) if self.default_factory else ()
-        return self.__class__, args, None, None, self.iteritems()
-
 
 def render_rst(rst_path):
     with open(rst_path, 'r') as rst_file:
         rst_string = rst_file.read()
-    return docutils_publish(rst_string, writer_name='html')['html_body']
+    return docutils_publish(rst_string, writer_name='html')
 
 
 def rst_title(rst_path):

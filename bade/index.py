@@ -1,3 +1,4 @@
+import hashlib
 import os
 import subprocess
 
@@ -8,20 +9,23 @@ class BadeIndex(object):
 
     def __init__(self, config):
         self.config = config
-        self.pages, self.nav = self.page_indexes()
-        self.posts = self.posts_index()
+        self.pages, self.nav = self._page_indexes()
+        self.posts_list = self._posts_list()
+        self.posts = self._posts_index()
         self.blogtree = self._blogtree()
 
-    def page_indexes(self):
+    def _page_indexes(self):
         pages = dict()
         nav = [{'title': 'Home', 'path': '/'}]
         found_blog = False
         for page in self.config.pages:
             if isinstance(page, str):
+                docutils = utils.render_rst(page + '.rst')
                 page_meta = {
-                    'title': utils.rst_title(page),
+                    'docutils': docutils,
                     'path': self.page_path(page),
                 }
+                page_meta['title_text'] = utils.strip_tags(docutils['title'])
                 nav.append(page_meta)
                 page_meta.update({
                     'build': self.page_build(page),
@@ -36,8 +40,7 @@ class BadeIndex(object):
             nav.append({'title': 'Blog', 'path': '/blog.html'})
         return pages, nav
 
-    def posts_index(self):
-        return_dict = dict()
+    def _posts_list(self):
         find = ['find', self.config.blogroot, '-name', '*.rst']
         try:
             paths_list = (subprocess.check_output(find,
@@ -46,41 +49,46 @@ class BadeIndex(object):
                                     .split())
         except subprocess.CalledProcessError:
             paths_list = list()
-        for idx, rst_path in enumerate(paths_list):
-            if idx == 0:
-                prev_post = None
-            else:
-                prev_post = {
-                    'title': utils.rst_title(paths_list[idx - 1]),
-                    'path': self.post_path(paths_list[idx - 1]),
-                }
-            if idx == (len(paths_list) - 1):
-                next_post = None
-            else:
-                next_post = {
-                    'title': utils.rst_title(paths_list[idx + 1]),
-                    'path': self.post_path(paths_list[idx + 1]),
-                }
+        return paths_list
+
+    def _posts_index(self):
+        return_dict = dict()
+        for rst_path in self.posts_list:
+            docutils = utils.render_rst(rst_path)
             return_dict[rst_path] = {
+                'id': hashlib.sha1(rst_path.encode('utf-8')).hexdigest(),
+                'docutils': docutils,
                 'date': utils.post_date(rst_path),
-                'title': utils.rst_title(rst_path),
                 'build': self.post_build(rst_path),
                 'path': self.post_path(rst_path),
-                'next_post': next_post,
-                'prev_post': prev_post,
             }
+            return_dict[rst_path]['title_text'] = utils.strip_tags(docutils['title'])
+        for idx, rst_path in enumerate(self.posts_list):
+            if idx == 0:
+                return_dict[rst_path]['prev_post'] = None
+            else:
+                prev_rst = self.posts_list[idx - 1]
+                return_dict[rst_path]['prev_post'] = {
+                    'title': return_dict[prev_rst]['docutils']['title'],
+                    'path': return_dict[prev_rst]['path'],
+                }
+            if idx == (len(self.posts_list) - 1):
+                return_dict[rst_path]['next_post'] = None
+            else:
+                next_rst = self.posts_list[idx + 1]
+                return_dict[rst_path]['next_post'] = {
+                    'title': return_dict[next_rst]['docutils']['title'],
+                    'path': return_dict[next_rst]['path'],
+                }
         return return_dict
 
     def _blogtree(self):
         'Monthly dict of posts'
         D = utils.OrderedDefaultdict
         blogtree = D(lambda: D(list))
-        for postpath in self.posts:
-            date = utils.post_date(postpath)
-            blogtree[date.year][date.month].append({
-                'title': utils.rst_title(postpath),
-                'path': self.post_path(postpath),
-            })
+        for post_rst in self.posts_list:
+            date = utils.post_date(post_rst)
+            blogtree[date.year][date.month].append(self.posts[post_rst])
         return blogtree
 
     def navigation(self):
