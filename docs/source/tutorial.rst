@@ -271,7 +271,7 @@ to override:
     <html>
         <head>
             <meta charset="UTF-8">
-            <title><%block name="title_block">${title}</%block></title>
+            <title><%block name="title_block">${title_text}</%block></title>
         </head>
         <body>
             <%block name="header_block">
