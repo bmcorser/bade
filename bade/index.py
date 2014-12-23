@@ -16,7 +16,7 @@ class BadeIndex(object):
 
     def _page_indexes(self):
         pages = dict()
-        nav = [{'title': 'Home', 'path': '/'}]
+        nav = [{'title_text': 'Home', 'path': '/'}]
         found_blog = False
         for page in self.config.pages:
             if isinstance(page, str):
@@ -33,11 +33,11 @@ class BadeIndex(object):
                 pages[page] = page_meta
             elif isinstance(page, dict):
                 title, path = page.popitem()
-                nav.append({'title': title, 'path': path})
+                nav.append({'title_text': title, 'path': path})
                 if title.lower() == 'blog':
                     found_blog = True
         if found_blog is not True:
-            nav.append({'title': 'Blog', 'path': '/blog.html'})
+            nav.append({'title_text': 'Blog', 'path': '/blog.html'})
         return pages, nav
 
     def _posts_list(self):
