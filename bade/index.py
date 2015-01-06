@@ -66,18 +66,18 @@ class BadeIndex(object):
             return_dict[rst_path]['title_text'] = utils.strip_tags(docutils['title'])
         for idx, rst_path in enumerate(self.posts_list):
             if idx == 0:
-                return_dict[rst_path]['prev_post'] = None
+                return_dict[rst_path]['next_post'] = None
             else:
                 prev_rst = self.posts_list[idx - 1]
-                return_dict[rst_path]['prev_post'] = {
+                return_dict[rst_path]['next_post'] = {
                     'title': return_dict[prev_rst]['docutils']['title'],
                     'path': return_dict[prev_rst]['path'],
                 }
             if idx == (len(self.posts_list) - 1):
-                return_dict[rst_path]['next_post'] = None
+                return_dict[rst_path]['prev_post'] = None
             else:
                 next_rst = self.posts_list[idx + 1]
-                return_dict[rst_path]['next_post'] = {
+                return_dict[rst_path]['prev_post'] = {
                     'title': return_dict[next_rst]['docutils']['title'],
                     'path': return_dict[next_rst]['path'],
                 }
