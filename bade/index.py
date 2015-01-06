@@ -47,6 +47,7 @@ class BadeIndex(object):
                                                   stderr=subprocess.STDOUT)
                                     .decode('utf-8')
                                     .split())
+            paths_list.sort(reverse=True)
         except subprocess.CalledProcessError:
             paths_list = list()
         return paths_list
