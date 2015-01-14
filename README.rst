@@ -1,7 +1,7 @@
 bade
 ####
 
-.. image:: docs/source/_static/bade.png
+.. image:: https://raw.githubusercontent.com/bmcorser/bade/master/docs/source/_static/bade.png
            :alt: bade
            :width: 400px
 
