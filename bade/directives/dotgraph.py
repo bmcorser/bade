@@ -7,12 +7,14 @@ def closed_dotgraphdirective(build):
     'Close the directive with the build directory'
     def DotgraphDirective(name, arguments, options, content, *args):
         graph = parse_dot_data('\n'.join(content))
-        outpath = build + arguments[0]
-        basedir = os.path.dirname(outpath)
+        href = arguments[0]
+        buildpath = build + href
+        basedir = os.path.dirname(buildpath)
         if not os.path.exists(basedir):
             os.makedirs(basedir)
-        graph.write_svg(outpath)
-        html = '<img src="{0}" class="dot-graph" />'.format(outpath)
+        graph.write_svg(buildpath)
+        print("Writing graph to: {0}".format(buildpath))
+        html = '<img src="{0}" class="dot-graph" />'.format(href)
         return [nodes.raw('', html, format='html')]
     DotgraphDirective.arguments = (1, 0, 1)
     DotgraphDirective.content = 1

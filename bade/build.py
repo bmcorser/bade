@@ -20,8 +20,9 @@ class Build(object):
         self.config = config
         package_templates = os.path.join(environ.get('VIRTUAL_ENV'),
                                          'bade/templates')
+        template_dirs = lmap(os.path.abspath, config.template_dirs)
         self.template_lookup = mako_lookup.TemplateLookup(
-            directories=config.template_dirs + [package_templates]
+            directories=template_dirs + [package_templates]
         )
         self.index = index.BadeIndex(config)
 
