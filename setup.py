@@ -42,7 +42,7 @@ def readme():
 
 setup(
     name=PKG_NAME,
-    version='0.1.1',
+    version='0.1.3',
     description='Micro-blogging with rST',
     data_files=include('templates'),
     packages=find_packages(),
@@ -56,6 +56,7 @@ setup(
         'mako',
         'sass-cli',
         'pyyaml',
+        'pydot3k'
     ],
     tests_require=['pytest'],
     cmdclass={'test': PyTest},

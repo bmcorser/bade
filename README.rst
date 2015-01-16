@@ -10,7 +10,8 @@ Micro-blogging with rST
 
 Bade is a small command line utility to allow the user to maintain a simple
 HTML website and weblog using only plaintext rST for their content. It also
-bundles an rST directive (see `the docs`_) for rendering DOT graphs as SVG.
+
+ bundles an rST directive (see `the docs`_) for rendering DOT graphs as SVG.
 
 It's very similar in spirit to some other things. It's like Pelican_ but it's a
 lot simpler and uses Mako_ instead of Jinja2_. It's also like Tinkerer_ but
