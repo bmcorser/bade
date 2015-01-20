@@ -8,6 +8,10 @@ bade
 Micro-blogging with rST
 -----------------------
 
+.. image:: https://badges.gitter.im/Join%20Chat.svg
+           :alt: Gitter
+           :target: https://gitter.im/bmcorser/bade?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+
 Bade is a small command line utility to allow the user to maintain a simple
 HTML website and weblog using only plaintext rST for their content. It also
 
