@@ -117,21 +117,17 @@ don't need to be explicitly added to ``bade.yaml``::
             └── 16
                 └── today.rst
 
-The default directory for posts is ``blog``, but this can be configured [#]_. The
-directory for "today" can be created with some shell subsitution:
+The default directory for posts is ``blog``, but this can be configured [#]_.
+There is bade utility command for creating a post for today, which runs like
+this:
 
 .. code-block:: shell
 
-    mkdir -p blog/$(date +'%Y/%m/%d')
+    bade --post exciting-news
 
-You can add an rST file to the "today" directory the same way (unless it turned
-midnight as you were typing):
-
-.. code-block:: shell
-
-    touch blog/$(date +'%Y/%m/%d')/exciting-news.rst
-
-Throw some rST in that file and tell Git about it:
+The above command will create any required directories for year, month, day and
+add the named file in the directory for “today”.  Throw some rST (the minimum
+required is a heading) in that file and tell Git about it:
 
 .. code-block:: shell
 
