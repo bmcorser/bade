@@ -56,7 +56,6 @@ setup(
         'mako',
         'sass-cli',
         'pyyaml',
-        'pydot3k',
         'pygments',
     ],
     tests_require=['pytest'],
