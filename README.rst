@@ -3,7 +3,7 @@ bade
 
 .. image:: https://raw.githubusercontent.com/bmcorser/bade/master/docs/source/_static/bade.png
            :alt: bade
-           :width: 400px
+           :width: 300px
 
 Micro-blogging with rST
 -----------------------
@@ -14,11 +14,14 @@ Micro-blogging with rST
 
 Bade is a small command line utility to allow the user to maintain a simple
 HTML website and weblog using only plaintext rST for their content. It also
-bundles an rST directive (see `the docs`_) for rendering DOT graphs as SVG.
+bundles some rST directives and roles (see `the docs`_) for:
+
+    - rendering DOT graphs to SVG
+    - rendering LaTeX to SVG
 
 It's very similar in spirit to some other things. It's like Pelican_ but it's a
 lot simpler and uses Mako_ instead of Jinja2_. It's also like Tinkerer_ but
-without the dependency on Sphinx_.
+without the dependency on Sphinx_. It also lets you use DOT and LaTeX.
 
 Bade is opinionated and simplistic, I wrote it mostly my own usage, so you
 probably shouldn't use it.

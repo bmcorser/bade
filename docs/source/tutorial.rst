@@ -322,7 +322,7 @@ something like this:
 
 .. code-block:: rst
 
-    .. dot-graph:: /assets/images/graph.svg
+    .. dot-graph::
 
         digraph G {
             a -> b -> c;
@@ -343,6 +343,52 @@ article`_ is also an excellent reference.
 .. _`Graphviz`: http://www.graphviz.org/
 .. _`a PDF`: http://www.graphviz.org/Documentation/dotguide.pdf
 .. _`the Wikipedia article`: http://en.wikipedia.org/wiki/DOT_%28graph_description_language%29
+
+.. _maths:
+
+``maths`` directive and role
+============================
+There’s a directive and role to render TeX markup to inline SVGs, so you can
+get worthwhile mathematical notation without your page looking like it’s having
+an unpleasent turn (I’m looking at *you*, MathJax). Of course, for this to be
+possible, you will need a local LaTeX installation.
+
+.. code-block:: rst
+
+    .. maths::
+
+        $
+        S = \{1, 2, 3} \\
+        \\
+        \alpha : S \rightarrow S \\
+        \\
+        \alpha =
+        \bigl(
+            \begin{smallmatrix}
+                1 & 2 & 3 \\
+                1 & 3 & 2
+            \end{smallmatrix}
+        \bigr)
+        $
+
+This would render some SVG markup directly inline with the page (no extra HTTP
+request required) looking something like this:
+
+.. image:: _static/eqn.svg
+
+There’s also a maths “role” so you can put notation inline with your text. For
+example, to define the permutation above in a more narrative fashion, we could
+write rST like this:
+
+.. code-block:: rst
+
+    Let :maths:`S = \{1, 2, 3\}` and let :maths:`\alpha : S \rightarrow S` be
+    the bijection given by :maths:`\alpha(1) = 1`, :maths:`\alpha(2) = 3` and
+    :maths:`\alpha(3) = 2`
+
+The layout of inline equations with their surrounding text is not managed
+whatsoever, so it won’t come close to looking like a LaTeX layout ... but at
+least the formulae will look perfect.
 
 Debugging templates
 ===================

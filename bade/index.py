@@ -20,7 +20,8 @@ class BadeIndex(object):
         found_blog = False
         for page in self.config.pages:
             if isinstance(page, str):
-                docutils = utils.render_rst(page + '.rst')
+                docutils = utils.render_rst(
+                    self.config.cache_dir, page + '.rst')
                 page_meta = {
                     'docutils': docutils,
                     'path': self.page_path(page),
@@ -55,7 +56,7 @@ class BadeIndex(object):
     def _posts_index(self):
         return_dict = dict()
         for rst_path in self.posts_list:
-            docutils = utils.render_rst(rst_path)
+            docutils = utils.render_rst(self.config.cache_dir, rst_path)
             return_dict[rst_path] = {
                 'id': hashlib.sha1(rst_path.encode('utf-8')).hexdigest(),
                 'docutils': docutils,

@@ -51,6 +51,7 @@ setup(
     author='bmcorser',
     author_email='bmcorser@gmail.com',
     install_requires=[
+        'beautifulsoup4',
         'click',
         'docutils',
         'mako',

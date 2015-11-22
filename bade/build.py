@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 import os
+import json
 import shutil
 import subprocess
 
@@ -24,6 +25,8 @@ class Build(object):
         self.template_lookup = mako_lookup.TemplateLookup(
             directories=template_dirs + [package_templates]
         )
+        if not os.path.isdir(self.config.cache_dir):
+            os.makedirs(self.config.cache_dir)
         self.index = index.BadeIndex(config)
 
     def clean(self):

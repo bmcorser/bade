@@ -1,5 +1,7 @@
 import collections
 import datetime
+import hashlib
+import json
 import os
 from docutils.core import publish_parts as docutils_publish
 from html.parser import HTMLParser
@@ -44,10 +46,21 @@ class OrderedDefaultdict(collections.OrderedDict):
         return default
 
 
-def render_rst(rst_path):
+def render_rst(cache_dir, rst_path):
     with open(rst_path, 'r') as rst_file:
         rst_string = rst_file.read()
-    return docutils_publish(rst_string, writer_name='html')
+    cache_key = hashlib.sha1(rst_string.encode('utf8')).hexdigest()
+    cache_path = os.path.join(cache_dir, cache_key)
+    if os.path.isfile(cache_path):
+        with open(cache_path, 'r') as cache_file:
+            try:
+                return json.load(cache_file)
+            except:
+                pass
+    rst_dict = docutils_publish(rst_string, writer_name='html')
+    with open(cache_path, 'w') as cache_file:
+        json.dump(rst_dict, cache_file)
+    return rst_dict
 
 
 def rst_title(rst_path):

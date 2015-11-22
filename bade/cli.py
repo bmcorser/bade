@@ -19,7 +19,7 @@ def create_post(config, post_name):
         pass
     post_filepath = os.path.join(path, post_filename)
     with open(post_filepath, 'a'):
-            os.utime(post_filepath, None)
+        os.utime(post_filepath, None)
     click.echo(post_filepath)
 
 

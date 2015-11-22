@@ -6,5 +6,8 @@
         ${docutils['html_body']}
         <%include file="prev_next.html" />
     </div>
-    <div class="commit">${commit}</a>
+    <div class='commits'></div>
+    <script type="text/javascript">
+      var commitHistory = ${commits};
+    </script>
 </%block>

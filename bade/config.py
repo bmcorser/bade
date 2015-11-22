@@ -1,6 +1,12 @@
 from docutils.parsers.rst import directives
+from docutils.parsers.rst import roles
 
-from .directives import pygments_directive, closed_dotgraphdirective
+from .directives import (
+    pygments_directive,
+    dotgraph_directive,
+    eqtexsvg_directive,
+    eqtexsvg_role,
+)
 
 
 class Configuration(object):
@@ -9,6 +15,7 @@ class Configuration(object):
     _defaults = {
         'assetpaths': ['assets'],
         'blogroot': 'blog',
+        'cache_dir': '.bade-cache',
         'blogtree_rst': 'blog.rst',
         'blogtitle': 'Blog',
         'build': '_build',
@@ -17,6 +24,7 @@ class Configuration(object):
         'index_template': 'index.html',
         'pages': [],
         'pygments_directive': True,
+        'eqtexsvg_directive': True,
         'template_dirs': ['templates'],
     }
 
@@ -31,8 +39,11 @@ class Configuration(object):
             directives.register_directive('code-block', pygments_directive)
         if self.dotgraph_directive:
             # Render DOT to SVG
-            closed_build = closed_dotgraphdirective(self.build)
-            directives.register_directive('dot-graph', closed_build)
+            directives.register_directive('dot-graph', dotgraph_directive)
+        if self.eqtexsvg_directive:
+            # Render LaTeX to SVG
+            directives.register_directive('maths', eqtexsvg_directive)
+            roles.register_canonical_role('maths', eqtexsvg_role)
         if not isinstance(self.template_dirs, list):
             raise TypeError('Misconfigured: `template_dirs` should be a list')
         if not isinstance(self.pages, list):
