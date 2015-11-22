@@ -8,3 +8,4 @@ zip -r $zip_name .
 popd
 popd
 mv docs/build/html/$zip_name ./
+echo "  $zip_name"
