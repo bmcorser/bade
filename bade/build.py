@@ -55,14 +55,16 @@ class Build(object):
         else:
             print("Writing to: {0}".format(buildpath))
 
-    def commit_github(self, rst_path):
+    def commits(self, rst_path):
         'Return the lastest commit and GitHub link for a given path'
-        G = ['git', 'log', '-n', '1', '--pretty=format:%h', '--', rst_path]
+        json_fmt = '{"hash": "%h", "subject": "%s"}'
+        pretty = "--pretty=format:{0}".format(json_fmt)
+        G = ['git', 'log', pretty, '--follow', '--', rst_path]
         try:
-            commit = subprocess.check_output(G).decode('utf-8')
+            output = subprocess.check_output(G).decode('utf-8').split('\n')
+            return json.dumps(lmap(json.loads, output), indent=2)
         except subprocess.CalledProcessError:
-            commit = 'HEAD'
-        return commit
+            return json.dumps([{'hash': 'HEAD', 'subject': ''}], indent=2)
 
     def page(self, page_path):
         'Build a page'
@@ -75,7 +77,7 @@ class Build(object):
     def post(self, rst_path):
         'Build a page'
         render_context, buildpath = self.index.post_context(rst_path)
-        render_context['commit'] = self.commit_github(rst_path)
+        render_context['commits'] = self.commits(rst_path)
         self.write_html('post.html', render_context, buildpath)
 
     def blog_page(self):
