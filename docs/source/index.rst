@@ -8,7 +8,7 @@ The docs
 
 Welcome to the docs ...
 
-.. image:: _static/bade.svg
+.. image:: https://raw.githubusercontent.com/bmcorser/bade/master/docs/source/_static/bade.png
            :width: 300px
 
 Micro-blogging with rST

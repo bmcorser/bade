@@ -374,7 +374,7 @@ possible, you will need a local LaTeX installation.
 This would render some SVG markup directly inline with the page (no extra HTTP
 request required) looking something like this:
 
-.. image:: _static/eqn.svg
+.. image:: https://raw.githubusercontent.com/bmcorser/bade/master/docs/source/_static/eqn.svg
 
 There’s also a maths “role” so you can put notation inline with your text. For
 example, to define the permutation above in a more narrative fashion, we could
