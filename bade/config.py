@@ -1,12 +1,8 @@
 from docutils.parsers.rst import directives
 from docutils.parsers.rst import roles
 
-from .directives import (
-    pygments_directive,
-    dotgraph_directive,
-    eqtexsvg_directive,
-    eqtexsvg_role,
-)
+from .directives import pygments, dotgraph, eqtexsvg
+
 
 
 class Configuration(object):
@@ -36,14 +32,15 @@ class Configuration(object):
         self._config_dict = config_dict
         if self.pygments_directive:
             # Render code blocks using pygments
-            directives.register_directive('code-block', pygments_directive)
+            directives.register_directive('code-block', pygments.pygments_directive)
         if self.dotgraph_directive:
             # Render DOT to SVG
-            directives.register_directive('dot-graph', dotgraph_directive)
+            directives.register_directive('dot-graph', dotgraph.dotgraph_directive)
         if self.eqtexsvg_directive:
             # Render LaTeX to SVG
-            directives.register_directive('maths', eqtexsvg_directive)
-            roles.register_canonical_role('maths', eqtexsvg_role)
+            eqtexsvg.CACHE_DIR = self.cache_dir
+            directives.register_directive('maths', eqtexsvg.eqtexsvg_directive)
+            roles.register_canonical_role('maths', eqtexsvg.eqtexsvg_role)
         if not isinstance(self.template_dirs, list):
             raise TypeError('Misconfigured: `template_dirs` should be a list')
         if not isinstance(self.pages, list):
