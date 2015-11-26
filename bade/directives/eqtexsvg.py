@@ -3,7 +3,7 @@ import os
 import subprocess
 import tempfile
 from docutils import nodes
-from bs4 import BeautifulSoup
+import bs4
 
 CACHE_DIR = None
 TEMPLATE = '''
@@ -62,10 +62,14 @@ def eqtexsvg(tex, cls_name):
         tex_file.write((TEMPLATE % tex))
     run(['latex', '-output-directory=%s' % workspace, tex_path])
     svg_bytes, _ = run(['dvisvgm', '-v0', '-a', '-n', '-s', '-e', dvi_path])
-    svg = BeautifulSoup(svg_bytes.decode('utf8'), 'html.parser')
+    svg = bs4.BeautifulSoup(svg_bytes.decode('utf8'), 'html.parser')
     svg.find('svg').attrs['class'] = cls_name
     svg.find('svg').attrs['style'] = 'overflow: visible'
-    svg_str = str(svg)
+    for element in svg:
+        if isinstance(element, bs4.element.ProcessingInstruction):
+            element.extract()
+            break
+    svg_str = str(svg).strip()
     _cache_set(cache_path, svg_str)
     return svg_str
 
