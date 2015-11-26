@@ -6,6 +6,24 @@ from docutils import nodes
 from bs4 import BeautifulSoup
 
 CACHE_DIR = None
+TEMPLATE = '''
+\\documentclass[varwidth,border=0.5pt]{standalone}
+\\usepackage{standalone}
+\\usepackage{amsmath}
+\\usepackage{amssymb}
+\\usepackage{amsfonts}
+\\usepackage{mathtools}
+\\begin{document}
+%s
+\\end{document}
+'''
+
+def run(cmd):
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout, stderr = proc.communicate()
+    if proc.returncode > 0:
+        exit(stdout)
+    return stdout, stderr
 
 
 def _cache_path(data):
@@ -36,10 +54,15 @@ def eqtexsvg(tex, cls_name):
     cached = _cache_get(cache_path)
     if cached:
         return cached
-    tmp = tempfile.NamedTemporaryFile()
-    print("LaTeX temp: {0}".format(tmp.name))
-    subprocess.check_call(['eqtexsvg', '-f', tex, '-o', tmp.name])
-    svg = BeautifulSoup(tmp.read().decode('utf8'), 'html.parser')
+    workspace = tempfile.mkdtemp()
+    print("LaTeX temp: {0}".format(workspace))
+    tex_path = os.path.join(workspace, 'eqn.tex')
+    dvi_path = os.path.join(workspace, 'eqn.dvi')
+    with open(tex_path, 'w') as tex_file:
+        tex_file.write((TEMPLATE % tex))
+    run(['latex', '-output-directory=%s' % workspace, tex_path])
+    svg_bytes, _ = run(['dvisvgm', '-v0', '-a', '-n', '-s', '-e', dvi_path])
+    svg = BeautifulSoup(svg_bytes.decode('utf8'), 'html.parser')
     svg.find('svg').attrs['class'] = cls_name
     svg_str = str(svg)
     _cache_set(cache_path, svg_str)
