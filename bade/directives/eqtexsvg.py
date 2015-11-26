@@ -64,6 +64,7 @@ def eqtexsvg(tex, cls_name):
     svg_bytes, _ = run(['dvisvgm', '-v0', '-a', '-n', '-s', '-e', dvi_path])
     svg = BeautifulSoup(svg_bytes.decode('utf8'), 'html.parser')
     svg.find('svg').attrs['class'] = cls_name
+    svg.find('svg').attrs['style'] = 'overflow: visible'
     svg_str = str(svg)
     _cache_set(cache_path, svg_str)
     return svg_str
