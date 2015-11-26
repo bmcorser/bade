@@ -42,7 +42,7 @@ def readme():
 
 setup(
     name=PKG_NAME,
-    version='0.2.1',
+    version='0.2.2',
     description='Micro-blogging with rST',
     data_files=include('templates'),
     packages=find_packages(),
