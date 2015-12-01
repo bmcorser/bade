@@ -49,7 +49,7 @@ def _cache_set(path, data):
         cache_file.write(data)
 
 
-def eqtexsvg(tex, cls_name):
+def eqtexsvg(tex, cls_name=None):
     cache_path = _cache_path(tex.encode('utf8'))
     cached = _cache_get(cache_path)
     if cached:
@@ -63,10 +63,15 @@ def eqtexsvg(tex, cls_name):
     run(['latex', '-output-directory=%s' % workspace, tex_path])
     svg_bytes, _ = run(['dvisvgm', '-v0', '-a', '-n', '-s', '-e', dvi_path])
     svg = bs4.BeautifulSoup(svg_bytes.decode('utf8'), 'html.parser')
-    svg.find('svg').attrs['class'] = cls_name
+    if cls_name:
+        svg.find('svg').attrs['class'] = cls_name
     svg.find('svg').attrs['style'] = 'overflow: visible'
     for element in svg:
         if isinstance(element, bs4.element.ProcessingInstruction):
+            element.extract()
+            break
+    for element in svg:
+        if isinstance(element, bs4.element.Comment):
             element.extract()
             break
     svg_str = str(svg).strip()
