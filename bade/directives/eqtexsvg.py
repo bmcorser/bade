@@ -49,11 +49,12 @@ def _cache_set(path, data):
         cache_file.write(data)
 
 
-def eqtexsvg(tex, cls_name=None):
+def eqtexsvg(tex, cls_name=None, inline=True):
     cache_path = _cache_path(tex.encode('utf8'))
-    cached = _cache_get(cache_path)
-    if cached:
-        return cached
+    if cache_path:
+        cached = _cache_get(cache_path)
+        if cached:
+            return cached
     workspace = tempfile.mkdtemp()
     print("LaTeX temp: {0}".format(workspace))
     tex_path = os.path.join(workspace, 'eqn.tex')
@@ -62,6 +63,8 @@ def eqtexsvg(tex, cls_name=None):
         tex_file.write((TEMPLATE % tex))
     run(['latex', '-output-directory=%s' % workspace, tex_path])
     svg_bytes, _ = run(['dvisvgm', '-v0', '-a', '-n', '-s', '-e', dvi_path])
+    if not inline:
+        return svg_bytes.decode('utf8')
     svg = bs4.BeautifulSoup(svg_bytes.decode('utf8'), 'html.parser')
     if cls_name:
         svg.find('svg').attrs['class'] = cls_name
