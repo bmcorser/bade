@@ -42,7 +42,7 @@ def readme():
 
 setup(
     name=PKG_NAME,
-    version='0.2.2',
+    version='0.2.3',
     description='Micro-blogging with rST',
     data_files=include('templates'),
     packages=find_packages(),
@@ -56,12 +56,15 @@ setup(
         'docutils',
         'mako',
         'sass-cli',
-        'pydot3k',
         'pygments',
+        'pydot',
         'pyyaml',
     ],
     tests_require=['pytest'],
     cmdclass={'test': PyTest},
+    dependency_links=[
+        'https://github.com/nlhepler/pydot.git#egg=pydot',
+    ],
     entry_points='''
         [console_scripts]
         bade=bade.cli:main
