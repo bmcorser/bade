@@ -19,7 +19,7 @@ class Build(object):
     def __init__(self, config):
         'Create config, build blog tree'
         self.config = config
-        package_templates = os.path.join(environ.get('VIRTUAL_ENV'),
+        package_templates = os.path.join(environ.get('VIRTUAL_ENV', '/src'),
                                          'bade/templates')
         template_dirs = lmap(os.path.abspath, config.template_dirs)
         self.template_lookup = mako_lookup.TemplateLookup(
