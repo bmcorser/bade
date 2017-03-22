@@ -4,4 +4,4 @@ mako
 sass-cli
 pygments
 pyyaml
--e git+https://github.com/nlhepler/pydot.git#egg=pydot
+https://github.com/erocarrera/pydot/archive/v1.2.3.zip

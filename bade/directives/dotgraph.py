@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 
 
 def dotgraph_directive(name, arguments, options, content, *args):
-    graph = parse_dot_data('\n'.join(content))
+    graph = parse_dot_data('\n'.join(content))[0]
     tmp = tempfile.NamedTemporaryFile()
     print("Graph temp: {0}".format(tmp.name))
     graph.write_svg(tmp.name)
