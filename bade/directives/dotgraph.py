@@ -1,6 +1,6 @@
 import tempfile
 from docutils import nodes
-from dot_parser import parse_dot_data
+from pydot._dotparser import parse_dot_data
 from bs4 import BeautifulSoup
 
 
