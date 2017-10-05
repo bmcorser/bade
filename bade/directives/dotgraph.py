@@ -1,11 +1,12 @@
 import tempfile
 from docutils import nodes
-from pydot._dotparser import parse_dot_data
+import pydot
 from bs4 import BeautifulSoup
 
 
 def dotgraph_directive(name, arguments, options, content, *args):
-    graph = parse_dot_data('\n'.join(content))[0]
+
+    graph = pydot.dot_parser.parse_dot_data('\n'.join(content))[0]
     tmp = tempfile.NamedTemporaryFile()
     print("Graph temp: {0}".format(tmp.name))
     graph.write_svg(tmp.name)
