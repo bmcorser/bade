@@ -1,7 +1,7 @@
 click
 docutils
 mako
-sass-cli
+pydot
 pygments
 pyyaml
-https://github.com/erocarrera/pydot/archive/v1.2.3.zip
+sass-cli
