@@ -1,0 +1,11 @@
+click
+docutils
+mako
+pydot
+pygments
+pyyaml
+<<<<<<< HEAD
+https://github.com/erocarrera/pydot/archive/v1.2.3.zip
+=======
+sass-cli
+>>>>>>> Upstream commit at bmcorser/blog@3c13a3453fa7bf22b41f975e7b38d8e9ea5ec495
