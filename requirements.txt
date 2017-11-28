@@ -1,7 +1,7 @@
 click
 docutils
 mako
-sass-cli
+pydot
 pygments
 pyyaml
--e git+https://github.com/nlhepler/pydot.git#egg=pydot
+sass-cli

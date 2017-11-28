@@ -12,9 +12,9 @@ Micro-blogging with rST
            :alt: Gitter
            :target: https://gitter.im/bmcorser/bade?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
-Bade is a small command line utility to allow the user to maintain a simple
-HTML website and weblog using only plaintext rST for their content. It also
-bundles some rST directives and roles (see `the docs`_) for:
+Bade is a command line utility to allow the user to maintain a simple HTML
+website and weblog using only plaintext rST for their content. It also bundles
+some rST directives and roles (see `the docs`_) for:
 
     - rendering DOT graphs to SVG
     - rendering LaTeX to SVG
